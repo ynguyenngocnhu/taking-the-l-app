@@ -70,9 +70,8 @@
   var app = document.getElementById('app');
 
   function header(kicker, title) {
-    return '<div class="row" style="align-items:center;justify-content:flex-start;gap:10px">' +
-      '<span class="lbox" style="width:34px;height:34px;font-size:24px" aria-hidden="true">L</span>' +
-      '<div style="display:flex;flex-direction:column"><span class="label">' + kicker + '</span><h1 style="font-size:22px">' + title + '</h1></div></div>';
+    return '<header class="head"><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><span class="kicker">' + kicker + '</span><h1>' + title + '</h1></div>' +
+      '<span class="lbox" style="width:40px;height:40px;font-size:28px" aria-hidden="true">L</span></header>';
   }
 
   function viewPosts() {
@@ -113,10 +112,14 @@
     var orig = parseFloat(draft.origSecs);
     var claim = (orig && orig > draft.secs) ? Math.round((1 - lScore(draft.secs, draft.res, draft.market) / lScore(orig, draft.res, draft.market)) * 100) : null;
     var mb = mbPerView(draft.secs, draft.res);
+    var views = parseInt(draft.views, 10) || 0;
     return '<div class="card" aria-live="polite">' +
-      '<div class="row" style="align-items:flex-end"><div style="display:flex;flex-direction:column;gap:2px"><span class="label">L-Score · g CO₂e / 1,000 views</span>' +
-      '<span class="score" style="color:' + (earned ? 'var(--red-text)' : 'var(--text)') + '">' + fmt(s) + '</span></div>' +
-      (earned ? '<span class="lbox" style="width:52px;height:52px;font-size:36px" aria-label="L earned">L</span>' : '') + '</div>' +
+      '<div class="pair"><div class="num"><span class="cap">VIEWS</span><span class="big red">' + (views ? fmtViews(views) : '—') + '</span><span class="cap2">total</span></div>' +
+      '<div class="vdash" aria-hidden="true"></div>' +
+      '<div class="num"><span class="cap">g CO₂e / 1k</span><span class="big' + (earned ? ' red' : '') + '">' + fmt(s) + '</span><span class="cap2">per 1,000 views</span></div></div>' +
+      '<div class="hdash" aria-hidden="true"></div>' +
+      '<dl class="kv"><dt>L line</dt><dd>' + fmt(m.line) + (m.lineNote === 'demo' ? ' (demo)' : '') + '</dd><dt>format</dt><dd>short video</dd><dt>market</dt><dd>' + m.name + '</dd>' +
+      '<dt>status</dt><dd class="' + (earned ? 'red' : '') + '">' + (earned ? 'L earned' : 'above the L line') + '</dd></dl>' +
       '<div class="bar"><div class="fill" style="width:' + pct.toFixed(1) + '%;background:' + (earned ? 'var(--red)' : '#8C8C8C') + '"></div><div class="mark" style="left:' + mark.toFixed(1) + '%"></div></div>' +
       '<div class="row mono small muted"><span>0</span><span>L line ' + fmt(m.line) + (m.lineNote === 'demo' ? ' (demo)' : '') + '</span><span>' + fmt(max) + '</span></div>' +
       '<p>' + verdict + '</p>' +
@@ -135,8 +138,8 @@
 
   function viewWeigh() {
     var marketOpts = Object.keys(MARKETS).map(function (k) { return '<option value="' + k + '"' + (k === draft.market ? ' selected' : '') + '>' + MARKETS[k].name + '</option>'; }).join('');
-    return header('Lever 1: seconds · Lever 2: resolution', 'Weigh a post') +
-      '<label class="drop" id="drop"><input type="file" id="file" accept="video/*"><span class="label red">Pick a video from your phone</span>' +
+    return header('The L-Score', 'Weigh a post') +
+      '<label class="drop" id="drop"><input type="file" id="file" accept="video/*"><span class="kicker">Pick a video from your phone</span>' +
       '<span class="small muted">We read its length and resolution in your browser. The video is never uploaded.</span>' +
       (draft.videoUrl ? '<video class="preview" src="' + draft.videoUrl + '" muted playsinline loop autoplay></video><span class="mono small">' + esc(draft.fileName) + '</span>' : '') +
       '</label>' +
@@ -161,8 +164,8 @@
     var mb = mbPerView(p.secs, p.res);
     var claim = (p.origSecs && p.origSecs > p.secs) ? Math.round((1 - lScore(p.secs, p.res, p.market) / lScore(p.origSecs, p.res, p.market)) * 100) : null;
     return '<div class="receipt" id="receipt">' +
-      '<div class="row" style="align-items:center"><span style="font-weight:700;font-size:14px;letter-spacing:.1em">IMPACT RECEIPT</span><span class="lbox" style="width:30px;height:30px;font-size:22px" aria-hidden="true">L</span></div>' +
-      '<span style="font-size:11px;color:#4A4A4A">' + esc(store.handle) + ' · ' + esc(p.title || 'Untitled post') + ' · ' + m.name + '</span>' +
+      '<div class="row" style="align-items:center"><span style="font-weight:700;font-size:13px;letter-spacing:.08em">IMPACT RECEIPT</span><span class="lbox" style="width:30px;height:30px;font-size:22px" aria-hidden="true">L</span></div>' +
+      '<span class="fine">' + esc(store.handle) + ' · ' + esc(p.title || 'Untitled post') + ' · ' + m.name + '</span>' +
       '<div class="dash"></div><dl>' +
       '<dt>seconds</dt><dd>' + p.secs + '</dd>' +
       '<dt>top resolution</dt><dd>' + p.res + '</dd>' +
@@ -191,18 +194,18 @@
   function viewEarnings() {
     var earnedCount = allPosts().filter(function (p) { return p.earned; }).length;
     var unlocked = earnedCount >= L_CREATOR_TARGET;
-    return header('Earnings', 'The L pays') +
-      '<div class="card"><div class="row"><span class="label red">The Lighter Rate</span><span class="mono small muted">TikTok Shop · Shopee</span></div>' +
+    return header('The L pays', 'A premium for light') +
+      '<div class="card"><div class="row"><span class="kicker">The Lighter Rate</span><span class="mono small muted">TikTok Shop · Shopee</span></div>' +
       '<span class="mono" style="font-size:40px;font-weight:700;line-height:1">+2 pts</span>' +
       '<p>Extra affiliate commission on every L post. Your other posts keep your standard rate.</p>' +
       '<label class="field"><span class="small muted">Your standard commission (%)</span><input type="number" id="rate" min="0" max="50" step="0.5" value="' + store.rate + '"></label>' +
       '<div class="grid2"><div class="stat"><span class="label">Standard</span><b id="rStd">' + store.rate + '%</b></div><div class="stat" style="border-color:var(--red)"><span class="label">L post</span><b id="rL" style="color:var(--red-text)">' + (store.rate + 2) + '%</b></div></div>' +
       '<p class="small muted">Capped until the Vietnam test shows L posts sell enough more to pay for it.</p></div>' +
-      '<div class="card"><span class="label red">The L-Media Fund</span><p>Paid boosts from L\'Oréal, spent only on L posts. Unlocks when you become an L Creator: ' + L_CREATOR_TARGET + ' L posts in a quarter.</p>' +
+      '<div class="card"><span class="kicker">The L-Media Fund</span><p>Paid boosts from L\'Oréal, spent only on L posts. Unlocks when you become an L Creator: ' + L_CREATOR_TARGET + ' L posts in a quarter.</p>' +
       '<div class="row mono"><span class="small">L posts this quarter</span><b>' + earnedCount + ' / ' + L_CREATOR_TARGET + '</b></div>' +
       '<div style="height:6px;background:#333;display:flex"><div style="width:' + Math.min(100, earnedCount / L_CREATOR_TARGET * 100) + '%;background:var(--red)"></div></div>' +
       '<span class="mono small" style="color:' + (unlocked ? 'var(--red-text)' : 'var(--muted)') + '">' + (unlocked ? 'Unlocked: your L posts get boosted' : 'Locked') + '</span></div>' +
-      '<div style="background:var(--red);color:var(--ink);padding:16px;display:flex;flex-direction:column;gap:6px"><span class="mono small" style="font-weight:700;letter-spacing:.1em">REFILL BONUS</span><span style="font-weight:700">Refillable products earn a further premium on top of the Lighter Rate.</span></div>' +
+      '<div style="background:var(--red);color:var(--ink);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px"><span class="mono small" style="font-weight:700;letter-spacing:.1em">REFILL BONUS</span><span style="font-weight:700">Refillable products earn a further premium on top of the Lighter Rate.</span></div>' +
       '<a class="btn primary" href="#weigh">Weigh my next post</a>';
   }
 
@@ -213,7 +216,7 @@
     }).join('');
     var br = RESOLUTIONS.map(function (r) { return '<tr><td>' + r + '</td><td>' + BITRATE_MBPS[r] + ' Mbps</td></tr>'; }).join('');
     return header('loreal.com/L · open to any brand', 'The L method') +
-      '<div class="card" style="background:var(--cream);color:var(--ink);border:0"><span class="label" style="color:#4A4A4A">The Weigh-In</span><span class="mono" style="font-size:28px;font-weight:700">[X] t CO₂e</span><span class="small">L\'Oréal weighs a year of its own SAPMENA social content first, by market and format, and publishes the tonnage.</span></div>' +
+      '<div class="card"><span class="kicker">The Weigh-In</span><span class="big red">[X] t CO₂e</span><span class="small">L\'Oréal weighs a year of its own SAPMENA social content first, by market and format, and publishes the tonnage.</span></div>' +
       '<div class="card"><span class="label">The formula</span><p class="mono small">L-Score = 1,000 × seconds × bitrate (GB/s) × energy per GB (kWh) × grid (g CO₂e/kWh)</p>' +
       '<p class="small muted">Energy per GB: ' + ENERGY_KWH_PER_GB + ' kWh (Impact+ to confirm). The creator controls seconds and top resolution. Compressing a 1080p upload does not change the score, because the platform re-encodes it.</p></div>' +
       '<div class="card"><span class="label">Markets · grid g/kWh · L line</span><table><tbody>' + rows + '</tbody></table><p class="small muted">*Demo line. Real lines are the format median per market, reset every quarter, and they only move down.</p></div>' +
@@ -383,33 +386,34 @@
       c.width = 1080; c.height = 1350;
       var x = c.getContext('2d');
       x.fillStyle = '#0D0D0D'; x.fillRect(0, 0, 1080, 1350);
-      x.fillStyle = '#F3EFE7'; x.fillRect(80, 80, 920, 1190);
+      x.fillStyle = '#121212'; x.strokeStyle = '#BDBDBD'; x.lineWidth = 3;
+      if (x.roundRect) { x.beginPath(); x.roundRect(80, 80, 920, 1190, 28); x.fill(); x.stroke(); } else { x.fillRect(80, 80, 920, 1190); x.strokeRect(80, 80, 920, 1190); }
       x.fillStyle = '#E52521'; x.fillRect(860, 120, 100, 100);
       x.fillStyle = '#0D0D0D'; x.font = '900 80px Archivo, sans-serif'; x.textAlign = 'center'; x.fillText('L', 910, 200);
-      x.textAlign = 'left';
+      x.textAlign = 'left'; x.fillStyle = '#F3EFE7';
       x.font = '700 40px "JetBrains Mono", monospace'; x.fillText('IMPACT RECEIPT', 130, 185);
-      x.fillStyle = '#4A4A4A'; x.font = '400 26px "JetBrains Mono", monospace';
+      x.fillStyle = '#A3A3A3'; x.font = '400 26px "JetBrains Mono", monospace';
       x.fillText((store.handle + ' · ' + (p.title || 'Untitled') + ' · ' + m.name).slice(0, 52), 130, 260);
-      function dash(y) { x.strokeStyle = '#8C8C8C'; x.setLineDash([10, 8]); x.lineWidth = 2; x.beginPath(); x.moveTo(130, y); x.lineTo(950, y); x.stroke(); x.setLineDash([]); }
+      function dash(y) { x.strokeStyle = '#555555'; x.setLineDash([10, 8]); x.lineWidth = 2; x.beginPath(); x.moveTo(130, y); x.lineTo(950, y); x.stroke(); x.setLineDash([]); }
       dash(300);
       var claim = (p.origSecs && p.origSecs > p.secs) ? Math.round((1 - lScore(p.secs, p.res, p.market) / lScore(p.origSecs, p.res, p.market)) * 100) : null;
       var rows = [['seconds', String(p.secs)], ['top resolution', p.res], ['MB per view', fmt1(mbPerView(p.secs, p.res))], ['g CO2e / 1,000', fmt(p.score)], ['L line', fmt(m.line)], ['views per 1 GB day', String(viewsPerGB(p.secs, p.res))]];
       var y = 370;
       rows.forEach(function (r) {
-        x.fillStyle = '#0D0D0D'; x.font = '400 34px "JetBrains Mono", monospace'; x.textAlign = 'left'; x.fillText(r[0], 130, y);
-        x.font = '700 34px "JetBrains Mono", monospace'; x.textAlign = 'right'; x.fillText(r[1], 950, y);
+        x.fillStyle = '#C9C9C9'; x.font = '400 34px "JetBrains Mono", monospace'; x.textAlign = 'left'; x.fillText(r[0], 130, y);
+        x.fillStyle = r[0].indexOf('CO2e') >= 0 ? '#F0302B' : '#F3EFE7'; x.font = '700 34px "JetBrains Mono", monospace'; x.textAlign = 'right'; x.fillText(r[1], 950, y);
         y += 62;
       });
       dash(y - 20); y += 50;
       x.textAlign = 'left';
-      x.fillStyle = p.earned ? '#B71C18' : '#0D0D0D';
-      x.font = '800 96px Archivo, sans-serif';
+      x.fillStyle = p.earned ? '#F0302B' : '#F3EFE7';
+      x.font = '800 96px "JetBrains Mono", monospace';
       x.fillText(p.earned ? 'L EARNED' : 'ABOVE THE LINE', 130, y + 40);
       y += 120;
-      x.fillStyle = '#0D0D0D'; x.font = '400 32px "JetBrains Mono", monospace';
+      x.fillStyle = '#F3EFE7'; x.font = '400 32px "JetBrains Mono", monospace';
       if (claim !== null) { x.fillText('lighter by ' + claim + '% vs. my ' + p.origSecs + ' s cut', 130, y); y += 54; }
       x.fillText('method: loreal.com/L', 130, y);
-      x.fillStyle = '#4A4A4A'; x.font = '400 20px "JetBrains Mono", monospace';
+      x.fillStyle = '#A3A3A3'; x.font = '400 20px "JetBrains Mono", monospace';
       x.fillText('Modelled per view from public inputs.', 130, 1200);
       x.fillText('Not a carbon neutral or net zero claim.', 130, 1232);
       return c;
