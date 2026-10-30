@@ -6,7 +6,7 @@ import { href } from '../../lib/router.js';
 import { MARKETS } from '../../lib/score.js';
 import { CampaignArt } from '../studio/Studio.jsx';
 
-const STATUS_CLS = { Live: 'bg-brand text-ink', Draft: 'bg-paper text-mute border border-line', Ended: 'bg-ink/10 text-ink-2' };
+const STATUS_CLS = { Live: 'bg-ink text-white', Draft: 'bg-paper text-mute border border-line', Ended: 'bg-ink/10 text-ink-2' };
 const BLANK = { name: '', brand: "L'Oréal Paris", description: '', reward: '', start: '2026-11-01', end: '2026-12-31', status: 'Draft', brief: [] };
 
 export function CampaignsAdmin() {

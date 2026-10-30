@@ -18,7 +18,7 @@ export function LGlyph({ size = 20, stroke = 'currentColor', weight = 0.22, clas
 
 export function LBox({ size = 28, className }) {
   return (
-    <span className={cx('inline-flex shrink-0 items-center justify-center rounded-[7px] bg-brand text-ink', className)} style={{ width: size, height: size }}>
+    <span className={cx('inline-flex shrink-0 items-center justify-center rounded-[7px] bg-brand text-white', className)} style={{ width: size, height: size }}>
       <LGlyph size={size * 0.68} />
     </span>
   );
@@ -29,7 +29,7 @@ export function Button({ variant = 'primary', size = 'md', className, as: As = '
   const sizes = { sm: 'h-9 px-4 text-[13px]', md: 'h-11 px-5 text-[15px]', lg: 'h-[52px] px-7 text-base' };
   const variants = {
     primary: 'bg-ink text-white hover:bg-ink-2',
-    brand: 'bg-brand text-ink hover:brightness-95',
+    brand: 'bg-brand text-white hover:bg-brand-deep',
     outline: 'border border-ink/80 text-ink hover:bg-ink hover:text-white',
     ghost: 'text-ink hover:bg-ink/5',
     danger: 'border border-bad text-bad hover:bg-bad hover:text-white',
@@ -51,7 +51,7 @@ export function Card({ className, children, ...rest }) {
 }
 
 const STATUS = {
-  qualified: { label: 'L-Earned', cls: 'bg-brand text-ink', Icon: Check },
+  qualified: { label: 'L-Earned', cls: 'bg-gold-soft text-gold-deep ring-1 ring-inset ring-gold/50', Icon: Check },
   review: { label: 'Under review', cls: 'bg-warn-bg text-warn', Icon: Clock },
   not: { label: 'Not qualified', cls: 'bg-over-bg text-over', Icon: X },
   rejected: { label: 'Rejected', cls: 'border border-bad/40 text-bad', Icon: AlertTriangle },
@@ -104,10 +104,10 @@ export function ScoreBar({ score, line, compact = false, dark = false }) {
   return (
     <div className={cx('w-full', compact ? 'pt-1' : 'pt-7')}>
       <div className={cx('relative h-3 rounded-full', dark ? 'bg-white/15' : 'bg-ink/[0.08]')}>
-        <div className={cx('grow absolute inset-y-0 left-0 rounded-full', under ? 'bg-brand' : 'bg-over')} style={{ width: `${sp}%` }} />
-        <div className={cx('absolute -top-1.5 -bottom-1.5 w-[3px] -translate-x-1/2 rounded', dark ? 'bg-white' : 'bg-ink')} style={{ left: `${lp}%` }} />
+        <div className={cx('grow absolute inset-y-0 left-0 rounded-full', under ? (dark ? 'bg-white' : 'bg-ink') : 'bg-line-strong')} style={{ width: `${sp}%` }} />
+        <div className={cx('absolute -top-1.5 -bottom-1.5 w-[3px] -translate-x-1/2 rounded', 'bg-brand')} style={{ left: `${lp}%` }} />
         {!compact && (
-          <span className="absolute -top-7 -translate-x-1/2 whitespace-nowrap font-mono text-[11px] font-semibold text-ink" style={{ left: `${lp}%` }}>
+          <span className="absolute -top-7 -translate-x-1/2 whitespace-nowrap font-mono text-[11px] font-semibold text-brand-deep" style={{ left: `${lp}%` }}>
             L line {fmt(line)}
           </span>
         )}
@@ -127,7 +127,7 @@ export function LProgress({ count, target = 10 }) {
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-10 gap-1.5" role="img" aria-label={`${count} of ${target} qualifying posts`}>
         {Array.from({ length: target }).map((_, i) => (
-          <div key={i} className={cx('flex aspect-square items-center justify-center rounded-md border', i < count ? 'border-brand bg-brand text-ink' : 'border-dashed border-line-strong text-line-strong')}>
+          <div key={i} className={cx('flex aspect-square items-center justify-center rounded-md border', i < count ? 'border-gold bg-gold text-ink' : 'border-dashed border-line-strong text-line-strong')}>
             <LGlyph size={16} weight={0.24} />
           </div>
         ))}
@@ -170,7 +170,7 @@ export function Toast() {
   if (!toast) return null;
   return (
     <div key={toast.id} role="status" className="rise fixed bottom-[max(20px,env(safe-area-inset-bottom))] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-5 py-3 text-[14px] font-medium text-white shadow-lg">
-      {toast.tone === 'bad' ? <X size={16} className="text-brand-text" /> : <Check size={16} className="text-brand-text" />}
+      {toast.tone === 'bad' ? <X size={16} className="text-brand-text" /> : <Check size={16} className="text-gold-text" />}
       {toast.text}
     </div>
   );

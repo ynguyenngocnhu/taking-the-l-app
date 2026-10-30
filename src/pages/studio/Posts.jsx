@@ -60,7 +60,7 @@ export function PostDetail({ id }) {
         <Card className={cx('flex flex-col gap-6 overflow-hidden p-6 sm:p-8', p.status === 'qualified' && 'border-ink')}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
-              <span className={cx('inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider', p.status === 'qualified' ? 'bg-brand text-ink' : p.status === 'draft' ? 'border border-dashed border-ink/40 text-ink' : 'bg-paper text-ink')}>
+              <span className={cx('inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider', p.status === 'qualified' ? 'bg-gold text-ink' : p.status === 'draft' ? 'border border-dashed border-ink/40 text-ink' : 'bg-paper text-ink')}>
                 {p.status === 'qualified' && <LGlyph size={13} />}{h.tag}
               </span>
               <span className="mt-3 flex items-baseline gap-2">
@@ -281,10 +281,10 @@ export function Receipt({ id }) {
             <div className="flex items-end justify-between rounded-xl bg-white/[0.06] p-4">
               <div className="flex flex-col">
                 <span className="eyebrow text-white/55">L-Score</span>
-                <span className="display text-[56px] font-black leading-[0.9] text-brand-text tnum">{fmt(p.score)}</span>
+                <span className="display text-[56px] font-black leading-[0.9] text-white tnum">{fmt(p.score)}</span>
                 <span className="font-mono text-[11px] text-white/55">g CO₂e / 1,000 views</span>
               </div>
-              <div className={cx('flex flex-col items-center gap-1 rounded-xl px-3 py-2', verified ? 'bg-brand text-ink' : 'border border-dashed border-white/40')}>
+              <div className={cx('flex flex-col items-center gap-1 rounded-xl px-3 py-2', verified ? 'bg-gold text-ink' : 'border border-dashed border-white/40')}>
                 <LGlyph size={30} />
                 <span className="text-[11px] font-bold uppercase tracking-wider">{verified ? 'L-Earned' : 'Pending'}</span>
               </div>

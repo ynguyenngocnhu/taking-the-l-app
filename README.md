@@ -26,7 +26,7 @@ npm run build        # production build to dist/ (what Vercel deploys)
 npm run build:single # one self-contained HTML file in dist-single/
 ```
 
-Stack: Vite, React 18, Tailwind CSS 3, Recharts, lucide-react. Colours follow the pitch deck: black, L red #E52521, cream. Hash routes (`#studio-submit`, `#admin-creator-c4`) so it works on any static host.
+Stack: Vite, React 18, Tailwind CSS 3, Recharts, lucide-react. Colours follow the L'Oréal palette (black, white, Passionate Red, Eternal Gold); values live in tailwind.config.js. Hash routes (`#studio-submit`, `#admin-creator-c4`) so it works on any static host.
 
 Code map: `src/data/mock.js` (demo data), `src/lib/score.js` (demo L-Score and benchmarks), `src/lib/store.jsx` (state and actions, the place to plug in a real API), `src/pages/{site,studio,admin}`.
 

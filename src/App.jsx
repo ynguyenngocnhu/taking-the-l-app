@@ -9,7 +9,7 @@ import Admin from './pages/admin/Admin.jsx';
 export default function App() {
   const route = useRoute();
   return (
-    <div className="min-h-screen bg-paper text-ink">
+    <div className="min-h-screen bg-white text-ink">
       <TopBar area={route.area} />
       {route.area === 'standard' && <Standard />}
       {route.area === 'studio' && <Studio route={route} />}

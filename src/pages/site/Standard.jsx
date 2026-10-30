@@ -38,7 +38,7 @@ function Hero() {
           the{' '}
           <span className="relative inline-block">
             L.
-            <span aria-hidden="true" className="absolute -bottom-1 left-0 h-[10px] w-full bg-brand sm:h-[16px]" />
+            <span aria-hidden="true" className="absolute -bottom-1 left-0 h-[10px] w-full bg-gold sm:h-[16px]" />
           </span>
         </h1>
         <p className="max-w-[540px] text-[18px] leading-relaxed text-white/75 sm:text-[20px]">
@@ -79,7 +79,7 @@ function WhatIsL() {
             <Card className="flex h-full flex-col gap-4 p-6">
               <div className="flex items-center justify-between">
                 <span className="display text-[44px] font-black leading-none text-line-strong">{s.n}</span>
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand"><s.Icon size={20} /></span>
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-white"><s.Icon size={20} /></span>
               </div>
               <h3 className="display text-[24px] font-extrabold">{s.t}</h3>
               <p className="text-[15px] leading-relaxed text-mute">{s.d}</p>
@@ -93,7 +93,7 @@ function WhatIsL() {
 
 function ScoreIntro() {
   return (
-    <Section id="score" eyebrow="Introducing L-Score" title="One number next to your views." className="bg-white" intro="L-Score is the estimated grams of CO₂e for every 1,000 views of a post. Lower is lighter. Come in under the L line for your market and format, and the post earns an L.">
+    <Section id="score" eyebrow="Introducing L-Score" title="One number next to your views." className="bg-paper" intro="L-Score is the estimated grams of CO₂e for every 1,000 views of a post. Lower is lighter. Come in under the L line for your market and format, and the post earns an L.">
       <div className="grid items-start gap-8 lg:grid-cols-[1.1fr_1fr]">
         <Card className="overflow-hidden border-ink">
           <div className="flex items-center justify-between bg-ink px-5 py-3 text-white">
@@ -118,7 +118,7 @@ function ScoreIntro() {
                 <span className="eyebrow">Market and format benchmark</span>
                 <span className="font-mono text-[15px] font-semibold">L line 610 · Vietnam · short video</span>
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-brand px-3 py-1.5 text-[14px] font-bold"><LGlyph size={16} /> Qualified: earned an L</span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-gold px-3 py-1.5 text-[14px] font-bold text-ink"><LGlyph size={16} /> Qualified: earned an L</span>
             </div>
           </div>
         </Card>
@@ -163,7 +163,7 @@ function HowItWorks() {
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className="text-[15px] font-bold">{i.t}</span>
               <span className="text-[14px] text-mute">{i.d}</span>
-              <span className="mt-1 font-mono text-[11px] uppercase tracking-wider text-brand-deep">{i.src}</span>
+              <span className="mt-1 font-mono text-[11px] uppercase tracking-wider text-mute">{i.src}</span>
             </div>
           </Card>
         ))}
@@ -250,7 +250,7 @@ function PublicBoard() {
   const { state } = useStore();
   const rows = leaderboard(state).slice(0, 6);
   return (
-    <Section id="impact" eyebrow={`Public impact · ${QUARTER.label}`} title="The lightest creators this quarter." intro="Ranked by qualifying L posts this quarter, then by how far under the L line they land on average.">
+    <Section id="impact" eyebrow={`Public impact · ${QUARTER.label}`} title="The lightest creators this quarter." className="bg-paper" intro="Ranked by qualifying L posts this quarter, then by how far under the L line they land on average.">
       <Card className="overflow-hidden">
         <div className="scroll-x">
           <table className="w-full min-w-[620px] text-[14px] tnum">
@@ -273,7 +273,7 @@ function PublicBoard() {
                       <span className="flex flex-col"><b>{r.name}</b><span className="text-[12px] text-mute">{MARKETS[r.market].name}</span></span>
                     </span>
                   </td>
-                  <td className="px-2 py-3.5 text-right font-mono font-semibold">{r.qualifiedQ}{r.qualifiedQ >= 10 && <span className="ml-2 rounded bg-brand px-1.5 py-0.5 font-sans text-[11px] font-bold">L Creator</span>}</td>
+                  <td className="px-2 py-3.5 text-right font-mono font-semibold">{r.qualifiedQ}{r.qualifiedQ >= 10 && <span className="ml-2 rounded bg-gold px-1.5 py-0.5 font-sans text-[11px] font-bold">L Creator</span>}</td>
                   <td className="px-2 py-3.5 text-right font-mono">{r.perf >= 0 ? `${r.perf}% under` : `${-r.perf}% over`}</td>
                   <td className="px-5 py-3.5 text-right font-mono">{r.campaigns.length}</td>
                 </tr>

@@ -35,7 +35,7 @@ function mockFetch(url) {
 }
 
 function FromLink() {
-  return <span className="ml-1.5 rounded-full bg-brand-soft px-2 py-0.5 align-middle text-[11px] font-semibold text-brand-deep">From link</span>;
+  return <span className="ml-1.5 rounded-full bg-paper px-2 py-0.5 align-middle text-[11px] font-semibold text-ink-2 ring-1 ring-inset ring-line">From link</span>;
 }
 
 function Stepper({ step }) {
@@ -43,7 +43,7 @@ function Stepper({ step }) {
     <ol className="flex items-center gap-2" aria-label="Progress">
       {STEPS.map((s, i) => (
         <li key={s} className="flex items-center gap-2" aria-current={i === step ? 'step' : undefined}>
-          <span className={cx('flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold', i < step ? 'bg-brand text-ink' : i === step ? 'bg-ink text-white' : 'border border-line-strong text-mute')}>
+          <span className={cx('flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold', i < step ? 'bg-ink text-white' : i === step ? 'bg-brand text-white' : 'border border-line-strong text-mute')}>
             {i < step ? <Check size={14} /> : i + 1}
           </span>
           <span className={cx('text-[13px] font-semibold', i === step ? 'text-ink' : 'text-mute')}>{s}</span>
@@ -181,7 +181,7 @@ export default function Submit() {
               return (
                 <button key={o.v} type="button" role="radio" aria-checked={on} onClick={() => setType(o.v)} className={cx('flex flex-col gap-3 rounded-2xl border-2 bg-white p-5 text-left transition-colors', on ? 'border-ink' : 'border-line hover:border-line-strong')}>
                   <span className="flex items-center justify-between">
-                    <span className={cx('flex h-11 w-11 items-center justify-center rounded-xl', on ? 'bg-brand' : 'bg-paper')}><o.Icon size={20} /></span>
+                    <span className={cx('flex h-11 w-11 items-center justify-center rounded-xl', on ? 'bg-brand text-white' : 'bg-paper')}><o.Icon size={20} /></span>
                     <span className={cx('flex h-5 w-5 items-center justify-center rounded-full border-2', on ? 'border-ink bg-ink' : 'border-line-strong')}>{on && <span className="h-2 w-2 rounded-full bg-brand" />}</span>
                   </span>
                   <b className="text-[17px]">{o.t}</b>
@@ -271,7 +271,7 @@ export default function Submit() {
 
       {step === 2 && (
         <Card className="flex flex-col items-center gap-6 px-6 py-12 text-center" aria-live="polite">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand"><Spinner size={24} /></span>
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white"><Spinner size={24} /></span>
           <ul className="flex flex-col gap-2 text-left text-[15px]">
             {['Reading the video details', 'Applying the L Standard', `Comparing with the ${MARKETS[f.market].name} L line`].map((t, i) => (
               <li key={t} className={cx('flex items-center gap-2 transition-opacity', phase > i ? 'opacity-100' : phase === i ? 'opacity-100' : 'opacity-30')}>

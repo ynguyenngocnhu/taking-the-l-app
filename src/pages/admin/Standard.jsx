@@ -107,14 +107,14 @@ export function Leaderboard() {
               </thead>
               <tbody>
                 {rows.map((r, i) => (
-                  <tr key={r.id} className={cx('border-t border-line', i < 3 && market === 'all' && 'bg-brand-soft/40')}>
+                  <tr key={r.id} className={cx('border-t border-line', i < 3 && market === 'all' && 'bg-gold-soft/60')}>
                     <td className="px-4 py-3"><span className={cx('flex h-8 w-8 items-center justify-center rounded-full font-mono text-[13px] font-bold', i < 3 ? 'bg-ink text-white' : 'bg-paper')}>{market === 'all' ? r.rank : i + 1}</span></td>
                     <td className="px-2 py-3"><a href={href(`admin-creator-${r.id}`)} className="flex items-center gap-3 hover:underline"><Avatar name={r.name} size={32} /><span className="flex flex-col leading-tight"><b>{r.name}</b><span className="text-[12px] text-mute">{r.handle}</span></span></a></td>
                     <td className="px-2 py-3">{MARKETS[r.market].name}</td>
-                    <td className="px-2 py-3 text-right font-mono"><b className="text-[16px]">{r.qualifiedQ}</b>{r.qualifiedQ >= L_CREATOR_TARGET && <span className="ml-2 rounded bg-brand px-1.5 py-0.5 font-sans text-[11px] font-bold">L Creator</span>}</td>
+                    <td className="px-2 py-3 text-right font-mono"><b className="text-[16px]">{r.qualifiedQ}</b>{r.qualifiedQ >= L_CREATOR_TARGET && <span className="ml-2 rounded bg-gold px-1.5 py-0.5 font-sans text-[11px] font-bold">L Creator</span>}</td>
                     <td className="px-2 py-3">
                       <span className="flex items-center gap-2">
-                        <span className="relative h-2 w-24 rounded-full bg-ink/[0.07]"><span className={cx('absolute inset-y-0 left-0 rounded-full', r.perf >= 0 ? 'bg-brand' : 'bg-over')} style={{ width: `${(Math.abs(r.perf) / maxPerf) * 100}%` }} /></span>
+                        <span className="relative h-2 w-24 rounded-full bg-ink/[0.07]"><span className={cx('absolute inset-y-0 left-0 rounded-full', r.perf >= 0 ? 'bg-ink' : 'bg-line-strong')} style={{ width: `${(Math.abs(r.perf) / maxPerf) * 100}%` }} /></span>
                         <span className="font-mono text-[13px]">{r.perf >= 0 ? `${r.perf}% under` : `${-r.perf}% over`}</span>
                       </span>
                     </td>

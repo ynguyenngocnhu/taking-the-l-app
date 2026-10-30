@@ -110,7 +110,7 @@ function LProgressDark({ count }) {
   return (
     <div className="grid grid-cols-10 gap-1.5" role="img" aria-label={`${count} of ${L_CREATOR_TARGET} qualifying posts`}>
       {Array.from({ length: L_CREATOR_TARGET }).map((_, i) => (
-        <div key={i} className={cx('flex aspect-square items-center justify-center rounded-md', i < count ? 'bg-brand text-ink' : 'border border-dashed border-white/25 text-white/25')}>
+        <div key={i} className={cx('flex aspect-square items-center justify-center rounded-md', i < count ? 'bg-gold text-ink' : 'border border-dashed border-white/25 text-white/25')}>
           <LGlyph size={16} weight={0.24} />
         </div>
       ))}
@@ -157,7 +157,7 @@ function Campaigns() {
                 <div className="flex gap-2 pt-1">
                   <Button variant="outline" size="sm" onClick={() => setOpen(k.id)}>View brief</Button>
                   {joined(k.id) ? (
-                    <span className="inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-soft px-4 text-[13px] font-semibold text-brand-deep"><Check size={15} /> Joined</span>
+                    <span className="inline-flex h-9 items-center gap-1.5 rounded-full bg-paper px-4 text-[13px] font-semibold text-ink"><Check size={15} /> Joined</span>
                   ) : (
                     <Button size="sm" onClick={() => join(k.id)}>Join campaign</Button>
                   )}
@@ -216,7 +216,7 @@ function Rewards() {
       <Card className="flex flex-col gap-5 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className={cx('flex h-12 w-12 items-center justify-center rounded-xl', isL ? 'bg-brand' : 'bg-paper')}><LGlyph size={26} /></span>
+            <span className={cx('flex h-12 w-12 items-center justify-center rounded-xl', isL ? 'bg-gold' : 'bg-paper')}><LGlyph size={26} /></span>
             <div className="flex flex-col">
               <span className="eyebrow">Current status</span>
               <b className="text-[18px]">{isL ? 'L Creator' : 'L Contributor'}</b>
@@ -232,10 +232,10 @@ function Rewards() {
           {INCENTIVES.map((i) => {
             const on = i.always || isL;
             return (
-              <Card key={i.key} className={cx('flex flex-col gap-2 p-5', on && 'border-brand-deep/40')}>
+              <Card key={i.key} className={cx('flex flex-col gap-2 p-5', on && 'border-gold/60')}>
                 <div className="flex items-center justify-between gap-2">
                   <b className="text-[16px]">{i.name}</b>
-                  <span className={cx('rounded-full px-2.5 py-1 text-[12px] font-semibold', on ? 'bg-brand text-ink' : 'bg-paper text-mute')}>{on ? 'Unlocked' : 'Locked'}</span>
+                  <span className={cx('rounded-full px-2.5 py-1 text-[12px] font-semibold', on ? 'bg-gold-soft text-gold-deep' : 'bg-paper text-mute')}>{on ? 'Unlocked' : 'Locked'}</span>
                 </div>
                 <p className="text-[14px] text-mute">{i.desc}</p>
                 <span className="font-mono text-[11px] uppercase tracking-wider text-mute">Unlocks at: {i.unlock}</span>

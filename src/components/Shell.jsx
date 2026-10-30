@@ -54,9 +54,9 @@ export function SideLayout({ title, user, items, current, children, footer }) {
             const on = it.key === current;
             return (
               <a key={it.key} href={href(it.to)} aria-current={on ? 'page' : undefined} className={cx('flex h-11 items-center gap-3 rounded-xl px-3 text-[14px] font-medium transition-colors', on ? 'bg-ink text-white' : 'text-ink-2 hover:bg-ink/5')}>
-                <it.Icon size={18} aria-hidden="true" className={on ? 'text-brand' : 'text-mute'} />
+                <it.Icon size={18} aria-hidden="true" className={on ? 'text-brand-text' : 'text-mute'} />
                 <span className="flex-1">{it.label}</span>
-                {it.badge ? <span className={cx('rounded-full px-2 py-0.5 text-[11px] font-bold tnum', on ? 'bg-brand text-ink' : 'bg-ink text-white')}>{it.badge}</span> : null}
+                {it.badge ? <span className={cx('rounded-full px-2 py-0.5 text-[11px] font-bold tnum', on ? 'bg-brand text-white' : 'bg-ink text-white')}>{it.badge}</span> : null}
               </a>
             );
           })}
@@ -69,7 +69,7 @@ export function SideLayout({ title, user, items, current, children, footer }) {
               <a key={it.key} href={href(it.to)} aria-current={on ? 'page' : undefined} className={cx('flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold', on ? 'bg-ink text-white' : 'border border-line bg-white text-ink-2')}>
                 <it.Icon size={15} aria-hidden="true" />
                 {it.label}
-                {it.badge ? <span className="rounded-full bg-brand px-1.5 text-[11px] text-ink tnum">{it.badge}</span> : null}
+                {it.badge ? <span className="rounded-full bg-brand px-1.5 text-[11px] text-white tnum">{it.badge}</span> : null}
               </a>
             );
           })}

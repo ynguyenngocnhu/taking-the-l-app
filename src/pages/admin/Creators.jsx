@@ -8,7 +8,7 @@ import { L_CREATOR_TARGET, QUARTER } from '../../data/mock.js';
 
 function StatusTag({ n }) {
   const on = n >= L_CREATOR_TARGET;
-  return <span className={cx('whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold', on ? 'bg-brand text-ink' : 'bg-paper text-mute')}>{on ? 'L Creator' : `${n}/${L_CREATOR_TARGET} to L Creator`}</span>;
+  return <span className={cx('whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold', on ? 'bg-gold text-ink' : 'bg-paper text-mute')}>{on ? 'L Creator' : `${n}/${L_CREATOR_TARGET} to L Creator`}</span>;
 }
 
 export function CreatorsAdmin() {
