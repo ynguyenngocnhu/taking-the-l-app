@@ -175,7 +175,7 @@ export default function Submit() {
           <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Submission type">
             {[
               { v: 'published', t: 'Published social media post', d: 'Paste the link to a live post. Verified posts can earn the L Mark.', Icon: Link2 },
-              { v: 'draft', t: 'Draft video', d: 'Check a cut before you post. You get an estimated L-Potential, not an L Mark.', Icon: FileVideo },
+              { v: 'draft', t: 'Draft video', d: 'Check a cut before you post. You get an estimated L-Score. Drafts never receive the L Mark.', Icon: FileVideo },
             ].map((o) => {
               const on = type === o.v;
               return (

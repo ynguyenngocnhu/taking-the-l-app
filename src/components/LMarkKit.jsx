@@ -180,3 +180,29 @@ export function LMarkModal({ open, onClose, p }) {
     </Modal>
   );
 }
+
+// Looping preview of the downloadable L Mark animation (the real file lives in /public/l-mark).
+export function LMarkAnimationPreview({ size = 120 }) {
+  return (
+    <span className="lm-anim relative inline-block" style={{ width: size, height: size }} aria-label="L Mark animation preview" role="img">
+      <style>{`
+        .lm-anim svg { width: 100%; height: 100%; }
+        .lm-anim .frame { transform-origin: 50% 50%; animation: lm-pop 2.8s cubic-bezier(.2,.8,.2,1) infinite; }
+        .lm-anim .v { stroke-dasharray: 60; stroke-dashoffset: 60; animation: lm-v 2.8s ease-out infinite; }
+        .lm-anim .h { stroke-dasharray: 50; stroke-dashoffset: 50; animation: lm-h 2.8s ease-out infinite; }
+        @keyframes lm-pop { 0% { transform: scale(.6); opacity: 0 } 14%, 92% { transform: scale(1); opacity: 1 } 100% { transform: scale(1); opacity: 0 } }
+        @keyframes lm-v { 0%, 12% { stroke-dashoffset: 60 } 30%, 100% { stroke-dashoffset: 0 } }
+        @keyframes lm-h { 0%, 30% { stroke-dashoffset: 50 } 46%, 100% { stroke-dashoffset: 0 } }
+        @media (prefers-reduced-motion: reduce) { .lm-anim .frame, .lm-anim .v, .lm-anim .h { animation: none; stroke-dashoffset: 0; opacity: 1; transform: none } }
+      `}</style>
+      <svg viewBox="0 0 100 100">
+        <g className="frame">
+          <rect x="4" y="4" width="92" height="92" rx="16" fill="#000" stroke="#B4975A" strokeWidth="1.6" />
+          <rect x="17" y="17" width="66" height="66" rx="9" fill="#B4975A" />
+          <path className="v" d="M39.4 28.9 V67.2" stroke="#000" strokeWidth="11.2" fill="none" />
+          <path className="h" d="M33.8 67.2 H69.8" stroke="#000" strokeWidth="11.2" fill="none" />
+        </g>
+      </svg>
+    </span>
+  );
+}

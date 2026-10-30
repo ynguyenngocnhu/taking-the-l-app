@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Home, Megaphone, Upload, Film, Gift, ArrowRight, Calendar, Check, Users } from 'lucide-react';
+import { Home, Megaphone, Upload, Film, Gift, ArrowRight, Calendar, Check, Users, Download } from 'lucide-react';
+import { LMarkAnimationPreview } from '../../components/LMarkKit.jsx';
 import { SideLayout, ResetDemo } from '../../components/Shell.jsx';
 import { Button, Card, Stat, StatusPill, Thumb, LProgress, PageHead, Modal, DemoNote, Empty, LGlyph, Avatar, cx } from '../../components/ui.jsx';
 import { href, go } from '../../lib/router.js';
@@ -183,6 +184,26 @@ function Campaigns() {
                 {c.brief.map((b) => <li key={b} className="flex gap-2 text-[14px]"><LGlyph size={16} className="mt-0.5 shrink-0 text-brand-deep" />{b}</li>)}
               </ul>
             </div>
+            <section aria-labelledby="lmark-anim-title" className="flex flex-col gap-4 rounded-xl border border-line p-4 sm:flex-row sm:items-start">
+              <div className="flex shrink-0 justify-center rounded-lg p-3" style={{ background: 'linear-gradient(160deg, #F2D0DA, #C9718A)' }}>
+                <LMarkAnimationPreview size={96} />
+              </div>
+              <div className="flex min-w-0 flex-col gap-2">
+                <h3 id="lmark-anim-title" className="text-[16px] font-bold">Add the L Mark to your video</h3>
+                <p className="text-[14px] text-ink-2">Download the official L Mark animation and include it in your campaign video.</p>
+                <ol className="flex list-decimal flex-col gap-1 pl-5 text-[13px] text-mute">
+                  <li>Import the file into CapCut or your editor as an overlay. The background is transparent.</li>
+                  <li>Place it in the top-right corner at about 15% of the frame width, clear of captions and app buttons.</li>
+                  <li>Show it for the last 3 seconds, then publish and submit the post link here.</li>
+                </ol>
+                <p className="text-[12px] text-mute">Using the animation does not award the L Mark. The L Mark is awarded only after you submit the published post and it passes verification.</p>
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <Button size="sm" variant="brand" as="a" href="l-mark/L-Mark-animation.mov" download="L-Mark-animation.mov" onClick={() => notify('Downloading the L Mark animation')}><Download size={15} /> Download L Mark animation</Button>
+                  <a href="l-mark/L-Mark-animation.webm" download className="text-[12px] font-semibold text-mute underline hover:text-ink">WebM version</a>
+                </div>
+                <span className="font-mono text-[11px] text-mute">MOV (ProRes 4444) · transparent · 1080×1080 · 2.5 s</span>
+              </div>
+            </section>
             <div className="flex flex-wrap justify-end gap-2 border-t border-line pt-4">
               {joined(c.id) ? (
                 <Button onClick={() => { setOpen(null); go('studio-submit'); }}>Submit a video for this <ArrowRight size={16} /></Button>
