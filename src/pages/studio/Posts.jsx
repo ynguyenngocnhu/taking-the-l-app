@@ -1,342 +1,261 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Receipt as ReceiptIcon, Share2, Download, Copy, Check, ArrowRight, ShieldCheck, ExternalLink } from 'lucide-react';
-import { Button, Card, StatusPill, Thumb, ScoreBar, Empty, DemoNote, Modal, Seg, LGlyph, LBox, LMark, PendingTag, Spinner, cx } from '../../components/ui.jsx';
-import { LMarkModal } from '../../components/LMarkKit.jsx';
-import { useStore, enrich } from '../../lib/store.jsx';
-import { href, go } from '../../lib/router.js';
-import { fmt, compact, factors, MARKETS, FORMATS, lScore, RESOLUTIONS } from '../../lib/score.js';
-import { ME } from '../../data/mock.js';
-
-function usePost(id) {
-  const { state } = useStore();
-  const raw = state.posts.find((p) => p.id === id && p.creatorId === ME);
-  return raw ? enrich(raw, state.benchmarks) : null;
-}
-
-function headline(p) {
-  if (p.status === 'draft') return { tag: 'Draft estimate', line: p.under ? 'This cut would qualify once published.' : 'This cut would not qualify yet.' };
-  if (p.status === 'review') return { tag: 'Pending verification', line: p.under ? 'Under the L line. The L Mark is issued once we verify the post.' : 'Over the L line. We are still verifying the inputs.' };
-  if (p.status === 'qualified') return { tag: 'L-Earned', line: 'Verified and under the L line. This post earned an L.' };
-  if (p.status === 'rejected') return { tag: 'Rejected', line: 'The inputs could not be verified. See the reviewer note below.' };
-  return { tag: 'Not qualified', line: 'Verified, but over the L line for this market and format.' };
-}
-
-function lighterOptions(p) {
-  const out = [];
-  const perSec = p.score / p.secs;
-  const maxSecs = Math.floor(p.line / perSec);
-  if (!p.under && maxSecs >= 5) out.push({ t: `Cut to ${maxSecs} s`, d: `Keeps the story, lands at ${fmt(lScore({ ...p, secs: maxSecs }))}.` });
-  const order = Object.keys(RESOLUTIONS);
-  const i = order.indexOf(p.res);
-  if (i > 0) {
-    const lower = order[i - 1];
-    out.push({ t: `Export at ${lower}`, d: `Same length, lands at ${fmt(lScore({ ...p, res: lower }))}.` });
-  }
-  if (p.secs >= 40) out.push({ t: `Try a ${Math.round(p.secs / 2)} s cut`, d: `Half the seconds, about half the score: ${fmt(lScore({ ...p, secs: Math.round(p.secs / 2) }))}.` });
-  return out.slice(0, 3);
-}
-
-export function PostDetail({ id }) {
-  const { state } = useStore();
-  const p = usePost(id);
-  const [share, setShare] = useState(false);
-  if (!p) return <Empty title="Post not found" body="It may have been removed when the demo was reset." action={<Button as="a" href={href('studio-posts')}>Back to My posts</Button>} />;
-  const h = headline(p);
-  const campaign = p.campaignId && state.campaigns.find((c) => c.id === p.campaignId);
-  const canReceipt = p.status !== 'draft' && p.status !== 'rejected' && p.under;
-  const opts = lighterOptions(p);
-  const earned = p.status === 'qualified';
-  return (
-    <div className="flex flex-col gap-6">
-      <a href={href('studio-posts')} className="inline-flex items-center gap-1.5 self-start text-[14px] font-semibold text-mute hover:text-ink"><ArrowLeft size={16} /> My posts</a>
-      <div className="flex min-w-0 flex-col gap-1.5">
-        <h1 className="display text-[26px] font-extrabold leading-tight sm:text-[32px]">{p.title}</h1>
-        <span className="text-[14px] text-mute">{p.platform} · {MARKETS[p.market].name} · submitted {p.submitted}{campaign ? ` · ${campaign.name}` : ''}</span>
-      </div>
-
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(240px,300px)_1fr]">
-        <div className="mx-auto flex w-full max-w-[300px] flex-col gap-3">
-          <div className="relative">
-            <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="lg" className={cx('aspect-[9/16] w-full rounded-2xl', earned && 'ring-2 ring-gold ring-offset-2')} label={p.title} />
-            {p.status === 'draft' && <span className="absolute left-3 top-3 rounded-md border border-dashed border-white/80 bg-ink/60 px-2 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-white">Draft estimate</span>}
-            {p.type !== 'draft' && <span className="absolute bottom-3 left-3 rounded bg-ink/75 px-1.5 py-0.5 font-mono text-[12px] text-white tnum">{compact(p.views)} views</span>}
-          </div>
-          <p className="text-center text-[13px] text-mute">
-            {earned ? 'This post carries the L Mark.' : p.status === 'review' ? 'The L Mark appears here once the post is verified.' : p.status === 'draft' ? 'Drafts can show their L-Potential, never the L Mark.' : 'No L Mark on this post.'}
-          </p>
-        </div>
-
-        <Card className={cx('flex flex-col gap-6 overflow-hidden p-6 sm:p-8', earned && 'border-gold')}>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              {earned ? <LMark size={30} className="self-start" /> : (
-                <span className={cx('inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider', p.status === 'draft' ? 'border border-dashed border-ink/40 text-ink' : 'bg-paper text-ink')}>{h.tag}</span>
-              )}
-              <span className="eyebrow mt-4">L-Score</span>
-              <span className="display text-[72px] font-black leading-[0.9] tnum sm:text-[88px]">{fmt(p.score)}</span>
-              <span className="font-mono text-[13px] text-mute">g CO₂e per 1,000 views</span>
-            </div>
-            {p.type !== 'draft' && (
-              <div className="flex flex-col items-end gap-1 text-right">
-                <span className="eyebrow">Views</span>
-                <span className="display text-[28px] font-extrabold tnum">{fmt(p.views)}</span>
-              </div>
-            )}
-          </div>
-          <ScoreBar score={p.score} line={p.line} />
-          <dl className="grid grid-cols-3 gap-3 border-t border-line pt-4 text-[13px]">
-            <div><dt className="text-mute">L line</dt><dd className="font-mono font-semibold">{fmt(p.line)}</dd></div>
-            <div><dt className="text-mute">Benchmark</dt><dd className="font-semibold">{MARKETS[p.market].name} · {FORMATS[p.format].name.toLowerCase()}</dd></div>
-            <div><dt className="text-mute">Status</dt><dd><StatusPill status={p.status} /></dd></div>
-          </dl>
-          <p className="text-[15px]">{h.line}</p>
-          <div className="flex flex-wrap gap-2">
-            {canReceipt && <Button as="a" href={href(`studio-receipt-${p.id}`)}><ReceiptIcon size={17} /> View Impact Receipt</Button>}
-            {earned && <Button variant="brand" onClick={() => setShare(true)}><Download size={17} /> Download or share L Mark</Button>}
-            {p.status === 'draft' && <Button onClick={() => go('studio-submit')}>Submit once published <ArrowRight size={16} /></Button>}
-          </div>
-          {p.status === 'review' && (
-            <div className="flex items-start gap-3 rounded-xl bg-paper p-4 text-[14px]">
-              <ShieldCheck size={18} className="mt-0.5 shrink-0" />
-              <span>Demo tip: switch to <a className="font-semibold underline" href={href('admin-review')}>Admin Console › Submission review</a> to approve this post, then come back to see the L Mark.</span>
-            </div>
-          )}
-        </Card>
-      </div>
-
-      <div className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-3">
-          <Card className="flex flex-col gap-1 p-5">
-            <span className="eyebrow mb-2">Key factors</span>
-            {factors(p).map((f) => (
-              <div key={f.key} className="flex flex-col gap-0.5 border-t border-line py-3 first:border-0 first:pt-0">
-                <div className="flex justify-between gap-3 text-[14px]"><span className="text-mute">{f.key}</span><b className="text-right font-mono text-[13px]">{f.value}</b></div>
-                <span className="text-[12px] text-mute">{f.note}</span>
-              </div>
-            ))}
-            <div className="flex justify-between gap-3 border-t border-line pt-3 text-[14px]"><span className="text-mute">L line</span><b className="font-mono text-[13px]">{fmt(p.line)} · {FORMATS[p.format].name.toLowerCase()}</b></div>
-          </Card>
-          {opts.length > 0 && (
-            <Card className="flex flex-col gap-3 p-5">
-              <span className="eyebrow">{p.under ? 'Make it even lighter' : 'Ways to get under the line'}</span>
-              {opts.map((o) => (
-                <div key={o.t} className="flex gap-3"><LGlyph size={18} className="mt-0.5 shrink-0 text-brand-deep" /><div className="text-[14px]"><b>{o.t}.</b> <span className="text-mute">{o.d}</span></div></div>
-              ))}
-            </Card>
-          )}
-          {p.notes.length > 0 && (
-            <Card className="flex flex-col gap-2 p-5">
-              <span className="eyebrow">Reviewer notes</span>
-              {p.notes.map((n, i) => <p key={i} className="text-[14px]"><span className="font-mono text-[12px] text-mute">{n.date}</span> {n.text}</p>)}
-            </Card>
-          )}
-      </div>
-      {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 self-start text-[13px] text-mute hover:text-ink"><ExternalLink size={14} /> Open the post (demo link)</a>}
-      <DemoNote />
-      <LMarkModal open={share} onClose={() => setShare(false)} p={p} />
-    </div>
-  );
-}
-
-// The two receipts every verified, qualifying post has: the Impact Receipt and the L Mark.
-function Receipts({ p, onMark, compact: small }) {
-  return (
-    <span className={cx('flex flex-wrap gap-1.5', small && 'px-0.5')}>
-      <a href={href(`studio-receipt-${p.id}`)} className="inline-flex h-8 items-center gap-1 rounded-full border border-line-strong px-3 text-[12px] font-semibold hover:border-ink"><ReceiptIcon size={13} /> Impact Receipt</a>
-      <button type="button" onClick={onMark} className="inline-flex h-8 items-center gap-1 rounded-full border border-gold/60 bg-gold-soft px-3 text-[12px] font-semibold text-gold-deep hover:border-gold"><LMark size={12} className="!p-[1px]" /> L Mark</button>
-    </span>
-  );
-}
+import React, { useMemo, useState } from 'react';
+import { ArrowLeft, ArrowUpRight, ShieldCheck, Share2, Upload, Scissors, AlertTriangle, Clock, Send } from 'lucide-react';
+import { Button, Card, Empty, Field, LMark, PageHead, ScoreBar, Seg, StatusPill, Thumb, DemoNote, cx } from '../../components/ui.jsx';
+import { CampaignTag, Receipts, ShareCardModal, contextLabel } from '../../components/PostBits.jsx';
+import { useStore, useMe, enrich, campaignLabel } from '../../lib/store.jsx';
+import { href } from '../../lib/router.js';
+import { fmt, compact, MARKETS, FORMATS, lScore, lineFor } from '../../lib/score.js';
+import { platformFromUrl } from '../../lib/lookup.js';
 
 const FILTERS = [
   { value: 'all', label: 'All' },
-  { value: 'qualified', label: 'Qualified' },
-  { value: 'review', label: 'Under review' },
-  { value: 'not', label: 'Not qualified' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'qualified', label: 'Qualifying' },
+  { value: 'not', label: 'Not qualifying' },
+  { value: 'rejected', label: 'Rejected' },
 ];
+
+export function qualification(p) {
+  return {
+    qualified: 'Qualifies · L Mark',
+    not: 'Above the L line',
+    review: 'Not decided yet',
+    info: 'Not decided yet',
+    rejected: 'Not eligible',
+  }[p.status];
+}
+
+function pending(p) {
+  return p.status === 'review' || p.status === 'info';
+}
+
+function ScoreCell({ p }) {
+  if (p.status === 'rejected') return <span className="text-mute">–</span>;
+  if (pending(p)) return <span className="font-mono text-mute" title="Estimate until verified">est. {fmt(p.score)}</span>;
+  return <b className="font-mono tnum">{fmt(p.score)}</b>;
+}
 
 export function MyPosts() {
   const { state } = useStore();
-  const [filter, setFilter] = useState(() => {
-    try { return sessionStorage.getItem('lp.postsFilter') || 'all'; } catch (e) { return 'all'; }
-  });
-  const choose = (v) => { setFilter(v); try { sessionStorage.setItem('lp.postsFilter', v); } catch (e) { /* ignore */ } };
-  const all = state.posts.filter((p) => p.creatorId === ME).map((p) => enrich(p, state.benchmarks)).sort((a, b) => b.submitted.localeCompare(a.submitted));
-  const match = (p) => filter === 'all' || p.status === filter || (filter === 'not' && p.status === 'rejected');
-  const rows = all.filter(match);
-  const count = (v) => all.filter((p) => v === 'all' || p.status === v || (v === 'not' && p.status === 'rejected')).length;
-  const [view, setView] = useState(() => {
-    try { return sessionStorage.getItem('lp.postsView') || 'grid'; } catch (e) { return 'grid'; }
-  });
-  const [markFor, setMarkFor] = useState(null);
-  const campaignName = (p) => (p.campaignId ? state.campaigns.find((c) => c.id === p.campaignId)?.name : '');
-  const chooseView = (v) => { setView(v); try { sessionStorage.setItem('lp.postsView', v); } catch (e) { /* ignore */ } };
+  const me = useMe();
+  const [filter, setFilter] = useState('all');
+  const posts = useMemo(() => state.posts
+    .filter((p) => p.creatorId === me.id)
+    .map((p) => enrich(p, state.benchmarks))
+    .sort((a, b) => b.submitted.localeCompare(a.submitted)), [state.posts, state.benchmarks, me.id]);
+  const list = posts.filter((p) => filter === 'all' || (filter === 'pending' ? pending(p) : p.status === filter));
+  const count = (v) => (v === 'all' ? posts.length : posts.filter((p) => (v === 'pending' ? pending(p) : p.status === v)).length);
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <span className="eyebrow">My posts</span>
-          <h1 className="display text-[28px] font-extrabold leading-none sm:text-[34px]">Every post, weighed</h1>
-        </div>
-        <Button as="a" href={href('studio-submit')}>Submit a video</Button>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Seg label="Filter posts" value={filter} onChange={choose} options={FILTERS.map((f) => ({ value: f.value, label: `${f.label} ${count(f.value)}` }))} />
-        <Seg label="View" value={view} onChange={chooseView} options={[{ value: 'grid', label: 'Gallery' }, { value: 'list', label: 'List' }]} />
-      </div>
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-mute">
-        <span className="flex items-center gap-1.5"><LMark size={12} label={false} /> L Mark earned</span>
-        <span className="flex items-center gap-1.5"><PendingTag className="!border-ink/50 !bg-ink/70" /> Pending verification</span>
-        <span>No mark: not qualified or draft</span>
-      </div>
-      {rows.length === 0 ? (
-        <Empty title="Nothing here yet" body={filter === 'review' ? 'No posts are waiting for verification.' : 'No posts match this filter.'} action={<Button variant="outline" onClick={() => choose('all')}>Show all posts</Button>} />
+      <PageHead eyebrow="My Posts" title="Submitted posts" sub="Every post you have submitted, its L-Score against its L line, and where it is in verification." actions={<Button variant="brand" as="a" href={href('studio-submit')}><Upload size={16} /> Submit a post</Button>} />
+      <Seg label="Filter by status" value={filter} onChange={setFilter} options={FILTERS.map((f) => ({ value: f.value, label: `${f.label} ${count(f.value)}` }))} />
+      {!list.length ? (
+        <Empty title="Nothing here" body="No posts with this status." />
       ) : (
-        view === 'grid' ? (
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {rows.map((p) => (
-              <li key={p.id} className="flex flex-col gap-2">
-                <a href={href(`studio-post-${p.id}`)} className="group flex flex-col gap-2">
-                  <div className="relative">
-                    <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="md" play={false} className={cx('aspect-[9/16] w-full rounded-xl transition-transform group-hover:-translate-y-0.5', p.status === 'qualified' && 'ring-2 ring-gold')} label={p.title} />
-                    {p.status === 'draft' && <span className="absolute left-2 top-2 rounded-md border border-dashed border-white/80 bg-ink/60 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-white">Draft</span>}
-                    {p.type !== 'draft' && <span className="absolute bottom-1 left-1 rounded bg-ink/75 px-1 font-mono text-[10px] text-white tnum">▶ {compact(p.views)}</span>}
-                  </div>
-                  <span className="flex flex-col gap-0.5 px-0.5">
-                    <span className="truncate text-[14px] font-semibold">{p.title}</span>
-                    <span className="font-mono text-[12px] text-mute">L-Score <b className={p.status === 'qualified' ? 'text-gold-deep' : 'text-ink'}>{fmt(p.score)}</b> / line {fmt(p.line)}</span>
-                    <span className="truncate text-[12px] text-mute">{campaignName(p) || 'No campaign'}</span>
-                  </span>
-                </a>
-                <span className="px-0.5"><StatusPill status={p.status} /></span>
-                {p.status === 'qualified' && <Receipts p={p} onMark={() => setMarkFor(p)} compact />}
-              </li>
-            ))}
-          </ul>
-        ) : (
         <>
-          <Card className="hidden overflow-hidden md:block">
-            <table className="w-full text-[14px] tnum">
-              <thead className="bg-paper text-left text-mute">
+          <div className="hidden overflow-x-auto rounded-2xl border border-line lg:block">
+            <table className="w-full text-left text-[13px]">
+              <thead className="bg-paper text-[11px] uppercase tracking-wider text-mute">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Video</th>
-                  <th className="px-2 py-3 font-medium">Campaign</th>
-                  <th className="px-2 py-3 text-right font-medium">Views</th>
-                  <th className="px-2 py-3 text-right font-medium">L-Score</th>
-                  <th className="px-2 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 text-right font-medium">Submitted</th>
+                  <th className="px-3 py-3">Post</th><th className="px-3 py-3">Platform · date</th><th className="px-3 py-3">Campaign</th>
+                  <th className="px-3 py-3 text-right">L-Score</th><th className="px-3 py-3 text-right">L line</th><th className="px-3 py-3">Verification</th><th className="px-3 py-3">Qualification</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((p) => (
-                  <tr key={p.id} className="cursor-pointer border-t border-line hover:bg-paper" onClick={() => go(`studio-post-${p.id}`)}>
-                    <td className="px-4 py-3">
-                      <a href={href(`studio-post-${p.id}`)} className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                        <Thumb index={p.thumb} secs={p.secs} status={p.status} className="h-12 w-[34px]" />
-                        <span className="font-semibold">{p.title}</span>
+                {list.map((p) => (
+                  <tr key={p.id} className="border-t border-line align-middle hover:bg-paper/60">
+                    <td className="max-w-[280px] px-3 py-2.5">
+                      <a href={href(`studio-post-${p.id}`)} className="flex items-center gap-3">
+                        <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="sm" className="h-16 w-12" label={p.title} play={false} />
+                        <span className="flex min-w-0 flex-col">
+                          <b className="truncate text-[14px] hover:underline">{p.title}</b>
+                          <span className="truncate font-mono text-[11px] text-mute">{p.url.replace(/^https:\/\//, '')}</span>
+                        </span>
                       </a>
                     </td>
-                    <td className="px-2 py-3 text-mute">{campaignName(p) || '–'}</td>
-                    <td className="px-2 py-3 text-right font-mono">{p.type === 'draft' ? '–' : fmt(p.views)}</td>
-                    <td className="px-2 py-3 text-right font-mono"><b>{fmt(p.score)}</b><span className="text-mute"> / {fmt(p.line)}</span></td>
-                    <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}><span className="flex flex-col items-start gap-1.5"><StatusPill status={p.status} />{p.status === 'qualified' && <Receipts p={p} onMark={() => setMarkFor(p)} compact />}</span></td>
-                    <td className="px-4 py-3 text-right font-mono text-[13px] text-mute">{p.submitted}</td>
+                    <td className="whitespace-nowrap px-3 py-2.5">{p.platform}<br /><span className="text-mute">{p.submitted}</span></td>
+                    <td className="max-w-[170px] px-3 py-2.5"><CampaignTag name={campaignLabel(state, p)} /></td>
+                    <td className="px-3 py-2.5 text-right"><ScoreCell p={p} /></td>
+                    <td className="px-3 py-2.5 text-right font-mono text-mute">{fmt(p.line)}</td>
+                    <td className="px-3 py-2.5"><StatusPill status={p.status} className="!text-[11px]" /></td>
+                    <td className={cx('whitespace-nowrap px-3 py-2.5 font-semibold', p.status === 'qualified' ? 'text-gold-deep' : 'text-mute')}>
+                      <span className="inline-flex items-center gap-1.5">{p.status === 'qualified' && <LMark size={16} />}{qualification(p)}</span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </Card>
-          <div className="grid gap-2 md:hidden">
-            {rows.map((p) => (
-              <a key={p.id} href={href(`studio-post-${p.id}`)} className="flex items-center gap-3 rounded-2xl border border-line bg-white p-3">
-                <Thumb index={p.thumb} secs={p.secs} status={p.status} className="h-16 w-11" />
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="truncate text-[15px] font-semibold">{p.title}</span>
-                  <span className="text-[12px] text-mute">{campaignName(p) || 'No campaign'} · {p.type !== 'draft' ? `${compact(p.views)} views` : 'draft'}</span>
-                  <span className="flex items-center gap-2"><StatusPill status={p.status} /><span className="font-mono text-[12px]"><b>{fmt(p.score)}</b><span className="text-mute"> / {fmt(p.line)}</span></span></span>
-                </div>
+          </div>
+          <div className="flex flex-col gap-3 lg:hidden">
+            {list.map((p) => (
+              <a key={p.id} href={href(`studio-post-${p.id}`)} className="flex gap-3 rounded-2xl border border-line p-3">
+                <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="sm" className="h-[104px] w-[78px]" label={p.title} play={false} />
+                <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <b className="line-clamp-2 text-[14px] leading-snug">{p.title}</b>
+                  <span className="truncate text-[12px] text-mute">{p.platform} · {p.submitted}</span>
+                  <CampaignTag name={campaignLabel(state, p)} className="self-start" />
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
+                    <span>L-Score <ScoreCell p={p} /></span>
+                    <span className="text-mute">line {fmt(p.line)}</span>
+                  </span>
+                  <StatusPill status={p.status} className="self-start !px-2 !py-0.5 !text-[11px]" />
+                </span>
               </a>
             ))}
           </div>
         </>
-        )
       )}
-      {markFor && <LMarkModal open onClose={() => setMarkFor(null)} p={markFor} />}
+      <DemoNote>Sample data. Scores and L lines are illustrative.</DemoNote>
     </div>
   );
 }
 
-export function Receipt({ id }) {
-  const { state, notify } = useStore();
-  const p = usePost(id);
-  const [busy, setBusy] = useState(false);
-  const [share, setShare] = useState(false);
-  if (!p) return <Empty title="Receipt not found" body="It may have been removed when the demo was reset." action={<Button as="a" href={href('studio-posts')}>Back to My posts</Button>} />;
-  const me = state.creators.find((c) => c.id === ME);
-  const verified = p.status === 'qualified';
-  const download = () => {
-    setBusy(true);
-    setTimeout(() => { setBusy(false); notify('Receipt saved as PNG (demo)'); }, 1100);
+function Detail({ k, children }) {
+  return (
+    <div className="flex flex-col gap-0.5 border-t border-line py-2.5 sm:flex-row sm:justify-between sm:gap-6">
+      <dt className="text-[13px] text-mute">{k}</dt>
+      <dd className="min-w-0 break-words text-[14px] font-semibold sm:text-right">{children}</dd>
+    </div>
+  );
+}
+
+function WhyNot({ p }) {
+  const { state } = useStore();
+  const perSec = p.score / p.secs;
+  // Longest cut that would come in at or under the line for its own format.
+  let target = null;
+  for (let s = p.secs - 1; s >= 5; s--) {
+    if (lScore({ ...p, secs: s }) <= lineFor(state.benchmarks, p.market, s)) { target = s; break; }
+  }
+  const lowerRes = p.res !== '720p' ? lScore({ ...p, res: '720p' }) : null;
+  return (
+    <Card className="flex flex-col gap-3 p-5">
+      <h2 className="text-[17px] font-bold">Why this post did not qualify</h2>
+      <p className="text-[14px] text-ink-2">Its L-Score of {fmt(p.score)} g is {fmt(p.score - p.line)} g ({Math.round((p.score / p.line - 1) * 100)}%) above the {fmt(p.line)} g L line for {contextLabel(p)}. The score is official, but only posts at or below the line carry the L Mark.</p>
+      <ul className="flex flex-col gap-2 text-[14px]">
+        {target && <li className="flex items-start gap-2"><Scissors size={16} className="mt-0.5 shrink-0" /> A {target} s cut would have come in at about {fmt(Math.round(perSec * target))} g, under its line.</li>}
+        {lowerRes && <li className="flex items-start gap-2"><Scissors size={16} className="mt-0.5 shrink-0" /> Publishing at 720p instead of {p.res} would estimate at {fmt(lowerRes)} g.</li>}
+      </ul>
+    </Card>
+  );
+}
+
+function InfoReply({ p }) {
+  const { dispatch, notify } = useStore();
+  const [url, setUrl] = useState(p.url);
+  const [text, setText] = useState('');
+  const [err, setErr] = useState('');
+  const send = () => {
+    if (!platformFromUrl(url)) return setErr('Paste a full TikTok, Instagram or YouTube link');
+    if (!text.trim()) return setErr('Add a short reply for the verification team');
+    dispatch({ type: 'resubmit', id: p.id, changes: { url: url.trim() }, text: text.trim() });
+    notify('Sent back for verification');
   };
-  const rows = [
-    ['Views', fmt(p.views)],
-    ['L-Score', `${fmt(p.score)} g / 1k views`],
-    ['L line', `${fmt(p.line)} · ${MARKETS[p.market].name}`],
-    ['Format', `${p.secs} s · ${p.res} · ${p.platform}`],
-    ['Status', verified ? 'Qualified · L-Earned' : 'Pending verification'],
-    ['Date verified', p.verified || '–'],
-  ];
+  return (
+    <Card className="flex flex-col gap-3 border-warn/40 p-5">
+      <h2 className="flex items-center gap-2 text-[17px] font-bold text-warn"><AlertTriangle size={18} /> The verification team needs more information</h2>
+      <Field label="Post link" htmlFor="ir-url"><input id="ir-url" className="input font-mono text-[13px]" value={url} onChange={(e) => { setUrl(e.target.value); setErr(''); }} /></Field>
+      <Field label="Your reply" htmlFor="ir-text" error={err}><textarea id="ir-text" className="input h-20 resize-none" value={text} onChange={(e) => { setText(e.target.value); setErr(''); }} placeholder="For example: the post is public now." /></Field>
+      <Button className="self-start" onClick={send}><Send size={16} /> Send and resubmit</Button>
+    </Card>
+  );
+}
+
+export function PostDetail({ id }) {
+  const { state } = useStore();
+  const me = useMe();
+  const [share, setShare] = useState(false);
+  const raw = state.posts.find((p) => p.id === id && p.creatorId === me.id);
+  if (!raw) return <Empty title="Post not found" action={<Button as="a" href={href('studio-posts')}>My Posts</Button>} />;
+  const p = enrich(raw, state.benchmarks);
+  const campaign = campaignLabel(state, p);
+  const q = p.status === 'qualified';
+
   return (
     <div className="flex flex-col gap-6">
-      <a href={href(`studio-post-${p.id}`)} className="inline-flex items-center gap-1.5 self-start text-[14px] font-semibold text-mute hover:text-ink"><ArrowLeft size={16} /> Back to result</a>
-      <div className="grid items-start gap-8 lg:grid-cols-[420px_1fr]">
-        <article aria-label="Impact Receipt" className="relative mx-auto w-full max-w-[420px] overflow-hidden rounded-2xl border border-[#BDBDBD]/60 bg-ink text-paper shadow-[0_20px_40px_-24px_rgba(13,13,13,.5)]">
-          <div className="flex items-center justify-between border-b border-dashed border-[#BDBDBD]/50 px-6 py-4 text-white">
-            <LBox size={26} />
-            <span className="font-mono text-[11px] uppercase tracking-widest text-white/60">Impact Receipt</span>
+      <a href={href('studio-posts')} className="inline-flex items-center gap-1 text-[13px] font-semibold text-mute hover:text-ink"><ArrowLeft size={14} /> My Posts</a>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[340px_1fr]">
+        <div className="flex flex-col gap-3">
+          <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="lg" className="aspect-[4/5] w-full max-w-[340px] rounded-2xl" label={p.title} />
+          {q && <p className="flex items-center gap-2 text-[13px] text-mute"><LMark size={18} /> Shown on your post in the L gallery and on its verification page.</p>}
+        </div>
+        <div className="flex min-w-0 flex-col gap-5">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2"><StatusPill status={p.status} /><CampaignTag name={campaign} /></div>
+            <h1 className="display text-[28px] font-extrabold leading-tight sm:text-[34px]">{p.title}</h1>
           </div>
-          <div className="flex flex-col gap-5 p-6">
-            <div className="flex items-center gap-4">
-              <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="sm" className="h-[92px] w-[64px]" label={p.title} />
-              <div className="flex min-w-0 flex-col gap-1">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-white/55">{me.name} · {me.handle}</span>
-                <b className="text-[17px] leading-snug">{p.title}</b>
+
+          {q && (
+            <Card className="flex flex-col gap-4 border-gold/60 p-5">
+              <div className="flex items-center gap-3"><LMark size={44} /><div className="flex flex-col"><b className="text-[17px]">This post carries the L Mark</b><span className="text-[13px] text-mute">Verification {p.vid} · {p.verified}</span></div></div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="brand" onClick={() => setShare(true)}><Share2 size={16} /> Share verified post card</Button>
+                <Button variant="outline" as="a" href={href(`verify-${p.vid}`)}><ShieldCheck size={16} /> Verification page</Button>
               </div>
-            </div>
-            <div className="flex items-end justify-between rounded-xl bg-white/[0.06] p-4">
-              <div className="flex flex-col">
-                <span className="eyebrow text-white/55">L-Score</span>
-                <span className="display text-[56px] font-black leading-[0.9] text-white tnum">{fmt(p.score)}</span>
-                <span className="font-mono text-[11px] text-white/55">g CO₂e / 1,000 views</span>
+            </Card>
+          )}
+          {pending(p) && (
+            <Card className="flex items-start gap-3 border-dashed border-line-strong p-5">
+              <Clock size={20} className="mt-0.5 shrink-0 text-warn" />
+              <div className="flex flex-col gap-1 text-[14px]">
+                <b className="text-[16px]">Pending verification · not complete</b>
+                <span className="text-mute">The score below is an estimate from your submission. It becomes official, and the post can qualify for the L Mark, only after verification.</span>
               </div>
-              <div className={cx('flex flex-col items-center gap-1 rounded-xl px-3 py-2', verified ? 'bg-gold text-ink' : 'border border-dashed border-white/40')}>
-                <LGlyph size={30} />
-                <span className="text-[11px] font-bold uppercase tracking-wider">{verified ? 'L-Earned' : 'Pending'}</span>
+            </Card>
+          )}
+          {p.status === 'info' && <InfoReply p={p} />}
+          {p.status === 'rejected' && (
+            <Card className="flex flex-col gap-2 border-bad/40 p-5">
+              <h2 className="flex items-center gap-2 text-[17px] font-bold text-bad"><AlertTriangle size={18} /> This post could not be verified</h2>
+              <p className="text-[14px] text-ink-2">{p.notes.filter((n) => n.by !== 'Creator').slice(-1)[0]?.text || 'The post did not meet the verification checks.'}</p>
+              <Button variant="outline" as="a" href={href('studio-submit')} className="self-start">Submit another post</Button>
+            </Card>
+          )}
+
+          {p.status !== 'rejected' && (
+            <Card className="flex flex-col gap-3 p-5">
+              <div className="flex flex-wrap items-end gap-3">
+                <span className={cx('display text-[48px] font-black leading-none tnum', pending(p) && 'text-mute')}>{fmt(p.score)}</span>
+                <span className="pb-1 text-[14px] text-mute">{pending(p) ? 'Estimated L-Score · ' : 'L-Score · '}g CO₂e per 1,000 views</span>
               </div>
-            </div>
-            <ScoreBar score={p.score} line={p.line} compact dark />
-            <dl className="flex flex-col font-mono text-[13px]">
-              {rows.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-dashed border-[#BDBDBD]/40 py-2 last:border-0">
-                  <dt className="text-white/55">{k}</dt><dd className="text-right font-semibold">{v}</dd>
-                </div>
-              ))}
+              <ScoreBar score={p.score} line={p.line} />
+            </Card>
+          )}
+          {p.status === 'not' && <WhyNot p={p} />}
+
+          <Card className="p-5">
+            <dl className="flex flex-col [&>div:first-child]:border-0">
+              <Detail k="Post link"><a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 break-all font-mono text-[12px] underline">{p.url} <ArrowUpRight size={12} className="shrink-0" /></a></Detail>
+              <Detail k="Platform">{p.platform}</Detail>
+              <Detail k="Campaign">{campaign}</Detail>
+              <Detail k="Market and format">{MARKETS[p.market].name} · {FORMATS[p.format].name}</Detail>
+              <Detail k="L line">{fmt(p.line)} g · {state.benchmarkPeriod.label}</Detail>
+              <Detail k="Inputs">{p.secs} s · {p.res} · {compact(p.views)} views{p.longSecs ? ` · long cut ${p.longSecs} s` : ''}</Detail>
+              <Detail k="Submitted">{p.submitted}</Detail>
+              <Detail k="Verified">{p.verified || 'Not yet'}</Detail>
+              {p.vid && <Detail k="Verification ID"><a href={href(`verify-${p.vid}`)} className="font-mono underline">{p.vid}</a></Detail>}
             </dl>
-            <p className="font-mono text-[10px] leading-relaxed text-white/45">Receipt {p.id.toUpperCase()} · L Standard {state.method.version}. Illustrative demo figures, not a validated carbon result.</p>
-          </div>
-          {!verified && <div className="pointer-events-none absolute right-5 top-20 rotate-12 rounded-md border-2 border-[#F2B84B] px-2 py-0.5 font-mono text-[12px] font-bold uppercase text-[#F2B84B]">Not yet verified</div>}
-        </article>
-        <div className="flex flex-col gap-4">
-          <h1 className="display text-[28px] font-extrabold leading-tight">Your Impact Receipt</h1>
-          <p className="max-w-md text-[15px] text-mute">Proof that this post landed under the L line. Post it to your story, pin it to the comments, or attach it to a campaign report.</p>
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={download} disabled={busy}>{busy ? <Spinner size={16} /> : <Download size={17} />} {busy ? 'Preparing…' : 'Download receipt'}</Button>
-            <Button variant="brand" onClick={() => setShare(true)} disabled={!verified}><Download size={17} /> Download L Mark</Button>
-          </div>
-          {!verified && <p className="text-[13px] text-warn">Sharing unlocks once the post is verified.</p>}
-          <DemoNote>Download and share are simulated in this prototype.</DemoNote>
+          </Card>
+
+          {(q || p.status === 'not') && (
+            <section className="flex flex-col gap-3">
+              <h2 className="text-[18px] font-bold">Impact receipts</h2>
+              <Receipts p={p} benchmarks={state.benchmarks} />
+            </section>
+          )}
+
+          {p.notes.length > 0 && (
+            <section className="flex flex-col gap-2">
+              <h2 className="text-[16px] font-bold">Notes</h2>
+              {p.notes.map((n, i) => (
+                <div key={i} className="rounded-xl bg-paper p-3 text-[14px]"><span className="text-[12px] text-mute">{n.by} · {n.date}</span><p>{n.text}</p></div>
+              ))}
+            </section>
+          )}
         </div>
       </div>
-      <LMarkModal open={share} onClose={() => setShare(false)} p={p} />
+      {q && <ShareCardModal open={share} onClose={() => setShare(false)} p={p} creator={me} campaign={campaign} />}
     </div>
   );
 }

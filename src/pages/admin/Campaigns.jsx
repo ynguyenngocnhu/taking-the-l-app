@@ -1,151 +1,118 @@
 import React, { useState } from 'react';
-import { Plus, Pencil, Eye } from 'lucide-react';
-import { Button, Card, PageHead, Modal, Field, Avatar, DemoNote, Seg, Empty, cx } from '../../components/ui.jsx';
-import { useStore, enrich } from '../../lib/store.jsx';
+import { Plus, Pencil, Inbox } from 'lucide-react';
+import { Button, Card, PageHead, Modal, Field, DemoNote, Seg, cx } from '../../components/ui.jsx';
+import { useStore } from '../../lib/store.jsx';
 import { href } from '../../lib/router.js';
 import { MARKETS } from '../../lib/score.js';
-import { CampaignArt } from '../studio/Studio.jsx';
 
-const STATUS_CLS = { Live: 'bg-ink text-white', Draft: 'bg-paper text-mute border border-line', Ended: 'bg-ink/10 text-ink-2' };
-const BLANK = { name: '', brand: "L'Oréal Paris", description: '', reward: '', start: '2026-11-01', end: '2026-12-31', status: 'Draft', brief: [] };
+const lines = (a) => (a || []).join('\n');
+const split = (s) => s.split('\n').map((x) => x.trim()).filter(Boolean);
+const words = (s) => s.split(/[\s,]+/).map((x) => x.trim()).filter(Boolean);
 
-export function CampaignsAdmin() {
-  const { state, dispatch, notify } = useStore();
-  const [view, setView] = useState(null);
-  const [edit, setEdit] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const list = state.campaigns.filter((c) => filter === 'all' || c.status === filter);
-  const stats = (id) => {
-    const posts = state.posts.filter((p) => p.campaignId === id && p.type !== 'draft');
-    return { creators: state.creators.filter((c) => c.campaigns.includes(id)), posts: posts.length, lposts: posts.filter((p) => p.status === 'qualified').length };
+function Editor({ campaign, onClose }) {
+  const { dispatch, notify } = useStore();
+  const [f, setF] = useState(() => ({
+    id: campaign?.id || `k${Date.now().toString(36)}`, name: '', brand: '', status: 'Draft', tone: 0, markets: [], description: '', objective: '', reward: '', start: '', end: '', deadline: '',
+    ...campaign,
+    requirements: lines(campaign?.requirements), deliverables: lines(campaign?.deliverables), eligibility: lines(campaign?.eligibility),
+    hashtags: (campaign?.hashtags || ['#TakingTheL']).join(' '), mentions: (campaign?.mentions || []).join(' '),
+  }));
+  const [err, setErr] = useState({});
+  const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
+  const toggle = (m) => setF((x) => ({ ...x, markets: x.markets.includes(m) ? x.markets.filter((y) => y !== m) : [...x.markets, m] }));
+  const save = () => {
+    const er = {};
+    if (!f.name.trim()) er.name = 'Required';
+    if (!f.brand.trim()) er.brand = 'Required';
+    if (!f.markets.length) er.markets = 'Pick at least one market';
+    if (!f.start || !f.end) er.dates = 'Add start and end dates';
+    else if (f.end < f.start) er.dates = 'End must be after start';
+    setErr(er);
+    if (Object.keys(er).length) return;
+    dispatch({ type: 'saveCampaign', campaign: { ...f, name: f.name.trim(), brand: f.brand.trim(), requirements: split(f.requirements), deliverables: split(f.deliverables), eligibility: split(f.eligibility), hashtags: words(f.hashtags), mentions: words(f.mentions), deadline: f.deadline || f.end } });
+    notify(campaign ? 'Campaign saved' : 'Campaign created');
+    onClose();
   };
-  const viewing = view && state.campaigns.find((c) => c.id === view);
   return (
-    <div className="flex flex-col gap-6">
-      <PageHead eyebrow="Campaign management" title="Campaigns" sub="Create briefs, set dates and rewards, and see who is taking part." actions={<Button onClick={() => setEdit({ ...BLANK })}><Plus size={17} /> New campaign</Button>} />
-      <Seg label="Filter campaigns" value={filter} onChange={setFilter} options={[{ value: 'all', label: 'All' }, 'Live', 'Draft', 'Ended']} />
-      {list.length === 0 ? (
-        <Empty title={`No ${filter.toLowerCase()} campaigns`} body="Create one, or change the filter." />
-      ) : (
-        <div className="flex flex-col gap-3">
-          {list.map((c) => {
-            const s = stats(c.id);
-            return (
-              <Card key={c.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-                <CampaignArt c={c} className="h-20 w-full shrink-0 rounded-xl sm:w-28" />
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <b className="text-[16px]">{c.name}</b>
-                    <span className={cx('rounded-full px-2 py-0.5 text-[11px] font-bold', STATUS_CLS[c.status])}>{c.status}</span>
-                  </div>
-                  <span className="text-[13px] text-mute">{c.brand} · <span className="font-mono">{c.start} → {c.end}</span> · {c.reward}</span>
-                </div>
-                <div className="flex gap-6 font-mono text-[13px]">
-                  <span className="flex flex-col"><b className="text-[18px] tnum">{s.creators.length}</b><span className="text-mute">creators</span></span>
-                  <span className="flex flex-col"><b className="text-[18px] tnum">{s.lposts}</b><span className="text-mute">L posts</span></span>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => setView(c.id)}><Eye size={15} /> View</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setEdit({ ...c })}><Pencil size={15} /> Edit</Button>
-                </div>
-              </Card>
-            );
-          })}
+    <Modal open onClose={onClose} title={campaign ? `Edit ${campaign.name}` : 'New campaign'} wide>
+      <div className="flex flex-col gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Campaign name" htmlFor="c-name" error={err.name}><input id="c-name" className="input" value={f.name} onChange={set('name')} /></Field>
+          <Field label="Brand" htmlFor="c-brand" error={err.brand}><input id="c-brand" className="input" value={f.brand} onChange={set('brand')} /></Field>
         </div>
-      )}
-      <DemoNote>Changes are saved in this browser only.</DemoNote>
-
-      <Modal open={!!viewing} onClose={() => setView(null)} title={viewing ? viewing.name : ''} wide>
-        {viewing && (() => {
-          const s = stats(viewing.id);
-          return (
-            <div className="flex flex-col gap-5">
-              <p className="text-[15px]">{viewing.description}</p>
-              <dl className="grid grid-cols-2 gap-3 text-[14px] sm:grid-cols-4">
-                {[['Brand', viewing.brand], ['Status', viewing.status], ['Dates', `${viewing.start} → ${viewing.end}`], ['Reward', viewing.reward]].map(([k, v]) => (
-                  <div key={k} className="rounded-xl bg-paper p-3"><dt className="text-[12px] text-mute">{k}</dt><dd className="font-semibold">{v}</dd></div>
-                ))}
-              </dl>
-              <div className="flex flex-col gap-2">
-                <span className="eyebrow">Participating creators ({s.creators.length})</span>
-                {s.creators.length === 0 ? <p className="text-[14px] text-mute">No creators have joined yet.</p> : (
-                  <ul className="divide-y divide-line rounded-xl border border-line">
-                    {s.creators.map((c) => {
-                      const n = state.posts.filter((p) => p.creatorId === c.id && p.campaignId === viewing.id && p.status === 'qualified').length;
-                      return (
-                        <li key={c.id}>
-                          <a href={href(`admin-creator-${c.id}`)} className="flex items-center gap-3 px-3 py-2.5 hover:bg-paper">
-                            <Avatar name={c.name} size={30} />
-                            <span className="flex flex-1 flex-col leading-tight"><b className="text-[14px]">{c.name}</b><span className="text-[12px] text-mute">{c.handle} · {MARKETS[c.market].name}</span></span>
-                            <span className="font-mono text-[13px]"><b>{n}</b> L posts</span>
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-              <div className="flex justify-end gap-2 border-t border-line pt-4">
-                <Button variant="outline" onClick={() => { setView(null); setEdit({ ...viewing }); }}><Pencil size={15} /> Edit campaign</Button>
-              </div>
-            </div>
-          );
-        })()}
-      </Modal>
-
-      <CampaignForm value={edit} onClose={() => setEdit(null)} onSave={(c) => {
-        const isNew = !c.id;
-        dispatch({ type: 'saveCampaign', campaign: isNew ? { ...c, id: `k${Date.now().toString(36)}`, tone: state.campaigns.length } : c });
-        setEdit(null);
-        notify(isNew ? 'Campaign created' : 'Campaign saved');
-      }} />
-    </div>
+        <div className="flex flex-col gap-1.5">
+          <span className="label">Status</span>
+          <Seg label="Status" value={f.status} onChange={(v) => setF((x) => ({ ...x, status: v }))} options={['Draft', 'Live', 'Closed']} />
+          <span className="text-[12px] text-mute">Only Live campaigns appear in Creator Studio.</span>
+        </div>
+        <fieldset className="flex flex-col gap-1.5">
+          <legend className="label mb-1.5">Eligible markets</legend>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(MARKETS).map(([k, m]) => (
+              <button key={k} type="button" aria-pressed={f.markets.includes(k)} onClick={() => toggle(k)} className={cx('h-9 rounded-full border px-3.5 text-[13px] font-semibold', f.markets.includes(k) ? 'border-ink bg-ink text-white' : 'border-line')}>{m.name}</button>
+            ))}
+          </div>
+          {err.markets && <span className="text-[13px] text-bad">{err.markets}</span>}
+        </fieldset>
+        <Field label="Description" htmlFor="c-desc"><textarea id="c-desc" className="input h-16 resize-none" value={f.description} onChange={set('description')} /></Field>
+        <Field label="Objective" htmlFor="c-obj"><input id="c-obj" className="input" value={f.objective} onChange={set('objective')} /></Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Requirements (one per line)" htmlFor="c-req"><textarea id="c-req" className="input h-24 resize-none" value={f.requirements} onChange={set('requirements')} /></Field>
+          <Field label="Deliverables (one per line)" htmlFor="c-del"><textarea id="c-del" className="input h-24 resize-none" value={f.deliverables} onChange={set('deliverables')} /></Field>
+          <Field label="Eligibility (one per line)" htmlFor="c-elig"><textarea id="c-elig" className="input h-24 resize-none" value={f.eligibility} onChange={set('eligibility')} /></Field>
+          <div className="flex flex-col gap-4">
+            <Field label="Hashtags" htmlFor="c-tags"><input id="c-tags" className="input font-mono text-[13px]" value={f.hashtags} onChange={set('hashtags')} /></Field>
+            <Field label="Mentions" htmlFor="c-ment"><input id="c-ment" className="input font-mono text-[13px]" value={f.mentions} onChange={set('mentions')} /></Field>
+          </div>
+        </div>
+        <Field label="Reward" htmlFor="c-reward"><input id="c-reward" className="input" value={f.reward} onChange={set('reward')} /></Field>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="Start" htmlFor="c-start" error={err.dates}><input id="c-start" type="date" className="input" value={f.start} onChange={set('start')} /></Field>
+          <Field label="End" htmlFor="c-end"><input id="c-end" type="date" className="input" value={f.end} onChange={set('end')} /></Field>
+          <Field label="Submission deadline" htmlFor="c-dl"><input id="c-dl" type="date" className="input" value={f.deadline} onChange={set('deadline')} /></Field>
+        </div>
+        <div className="flex justify-end gap-2 border-t border-line pt-4">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button onClick={save}>{campaign ? 'Save campaign' : 'Create campaign'}</Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 
-function CampaignForm({ value, onClose, onSave }) {
-  const [f, setF] = useState(value);
-  const [err, setErr] = useState({});
-  const [key, setKey] = useState(null);
-  if (value && key !== value) { setKey(value); setF(value); setErr({}); }
-  if (!value || !f) return null;
-  const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target ? e.target.value : e }));
-  const submit = (e) => {
-    e.preventDefault();
-    const er = {};
-    if (!f.name.trim()) er.name = 'Name the campaign.';
-    if (!f.reward.trim()) er.reward = 'Describe the reward creators get.';
-    if (!f.start || !f.end) er.end = 'Set both dates.';
-    else if (f.end <= f.start) er.end = 'The end date must be after the start date.';
-    setErr(er);
-    if (Object.keys(er).length) return;
-    onSave({ ...f, name: f.name.trim(), brief: f.brief.length ? f.brief : [f.description || 'Brief to follow'] });
-  };
+export function CampaignsAdmin() {
+  const { state } = useStore();
+  const [edit, setEdit] = useState(null);
   return (
-    <Modal open onClose={onClose} title={value.id ? 'Edit campaign' : 'New campaign'} wide>
-      <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
-        <Field label="Campaign name" htmlFor="c-name" error={err.name}><input id="c-name" className={cx('input', err.name && 'input-error')} value={f.name} onChange={set('name')} placeholder="e.g. Thirty Seconds of Glow" /></Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Brand" htmlFor="c-brand">
-            <select id="c-brand" className="input" value={f.brand} onChange={set('brand')}>
-              {["L'Oréal Paris", 'Garnier', 'Maybelline New York', 'CeraVe', 'La Roche-Posay', 'NYX Professional Makeup'].map((b) => <option key={b}>{b}</option>)}
-            </select>
-          </Field>
-          <Field label="Status" htmlFor="c-status">
-            <select id="c-status" className="input" value={f.status} onChange={set('status')}>{['Draft', 'Live', 'Ended'].map((s) => <option key={s}>{s}</option>)}</select>
-          </Field>
-        </div>
-        <Field label="Description" htmlFor="c-desc"><textarea id="c-desc" className="input h-24 resize-none" value={f.description} onChange={set('description')} placeholder="What creators should make, in a sentence or two." /></Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Start date" htmlFor="c-start"><input id="c-start" type="date" className="input" value={f.start} onChange={set('start')} /></Field>
-          <Field label="End date" htmlFor="c-end" error={err.end}><input id="c-end" type="date" className={cx('input', err.end && 'input-error')} value={f.end} onChange={set('end')} /></Field>
-        </div>
-        <Field label="Reward" htmlFor="c-reward" error={err.reward} hint="Shown to creators on the campaign card."><input id="c-reward" className={cx('input', err.reward && 'input-error')} value={f.reward} onChange={set('reward')} placeholder="$300 fee + L-Media Fund boost" /></Field>
-        <div className="flex justify-end gap-2 border-t border-line pt-4">
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button type="submit">{value.id ? 'Save changes' : 'Create campaign'}</Button>
-        </div>
-      </form>
-    </Modal>
+    <div className="flex flex-col gap-6">
+      <PageHead eyebrow="Campaigns" title="Campaigns" sub="Create and edit briefs, set eligible markets and dates, and review what creators submit." actions={<Button onClick={() => setEdit('new')}><Plus size={16} /> New campaign</Button>} />
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        {state.campaigns.map((c) => {
+          const posts = state.posts.filter((p) => p.campaignId === c.id);
+          const creators = state.creators.filter((x) => x.campaigns.includes(c.id)).length;
+          return (
+            <Card key={c.id} className="flex flex-col gap-3 p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col"><span className="text-[13px] text-mute">{c.brand}</span><b className="text-[18px]">{c.name}</b></div>
+                <span className={cx('rounded-full px-2.5 py-1 text-[12px] font-semibold', c.status === 'Live' ? 'bg-ink text-white' : 'border border-line text-mute')}>{c.status}</span>
+              </div>
+              <p className="text-[14px] text-ink-2">{c.description}</p>
+              <dl className="grid grid-cols-2 gap-2 text-[13px] sm:grid-cols-4">
+                <div><dt className="text-mute">Markets</dt><dd className="font-semibold">{c.markets.map((m) => MARKETS[m].name).join(', ')}</dd></div>
+                <div><dt className="text-mute">Dates</dt><dd className="font-semibold">{c.start} to {c.end}</dd></div>
+                <div><dt className="text-mute">Creators joined</dt><dd className="font-mono font-semibold">{creators}</dd></div>
+                <div><dt className="text-mute">Submissions</dt><dd className="font-mono font-semibold">{posts.length} · {posts.filter((p) => p.status === 'review').length} pending</dd></div>
+              </dl>
+              <div className="mt-auto flex flex-wrap gap-2 pt-1">
+                <Button variant="outline" size="sm" onClick={() => setEdit(c)}><Pencil size={14} /> Edit</Button>
+                <Button variant="ghost" size="sm" as="a" href={href(`admin-submissions-${c.id}`)}><Inbox size={14} /> Review submissions</Button>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+      <DemoNote>Sample campaigns. Edits stay in this browser.</DemoNote>
+      {edit && <Editor campaign={edit === 'new' ? null : edit} onClose={() => setEdit(null)} />}
+    </div>
   );
 }

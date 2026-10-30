@@ -16,12 +16,9 @@ export function LGlyph({ size = 20, stroke = 'currentColor', weight = 0.22, clas
   );
 }
 
+// The L Mark from the pitch deck: a red square with a black L. Also used as the platform logo.
 export function LBox({ size = 28, className }) {
-  return (
-    <span className={cx('inline-flex shrink-0 items-center justify-center rounded-[7px] bg-brand text-white', className)} style={{ width: size, height: size }}>
-      <LGlyph size={size * 0.68} />
-    </span>
-  );
+  return <LMark size={size} className={className} />;
 }
 
 export function Button({ variant = 'primary', size = 'md', className, as: As = 'button', children, ...rest }) {
@@ -51,15 +48,16 @@ export function Card({ className, children, ...rest }) {
 }
 
 const STATUS = {
-  qualified: { label: 'L-Earned', cls: 'bg-gold-soft text-gold-deep ring-1 ring-inset ring-gold/50', Icon: Check },
-  review: { label: 'Under review', cls: 'bg-warn-bg text-warn', Icon: Clock },
-  not: { label: 'Not qualified', cls: 'bg-over-bg text-over', Icon: X },
+  qualified: { label: 'Verified · qualifying', cls: 'bg-gold-soft text-gold-deep ring-1 ring-inset ring-gold/50', Icon: Check },
+  not: { label: 'Verified · not qualifying', cls: 'bg-over-bg text-over', Icon: X },
+  review: { label: 'Pending verification', cls: 'bg-warn-bg text-warn', Icon: Clock },
+  info: { label: 'Information requested', cls: 'bg-warn-bg text-warn ring-1 ring-inset ring-warn/30', Icon: AlertTriangle },
   rejected: { label: 'Rejected', cls: 'border border-bad/40 text-bad', Icon: AlertTriangle },
-  draft: { label: 'Estimate', cls: 'bg-ink/5 text-mute', Icon: Sparkles },
 };
+export const STATUS_LABEL = Object.fromEntries(Object.entries(STATUS).map(([k, v]) => [k, v.label]));
 
 export function StatusPill({ status, className }) {
-  const s = STATUS[status] || STATUS.draft;
+  const s = STATUS[status] || STATUS.review;
   return (
     <span className={cx('inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold', s.cls, className)}>
       <s.Icon size={13} strokeWidth={2.5} aria-hidden="true" />
@@ -81,27 +79,26 @@ export function Thumb({ index, secs, className, label, status, mark = 'xs', play
   const m = MARK[mark] || MARK.xs;
   const big = mark === 'md' || mark === 'lg';
   return (
-    <div className={cx('relative shrink-0 overflow-hidden rounded-lg', className)} style={{ background: `linear-gradient(160deg, ${a}, ${b})` }} role="img" aria-label={`${label || 'Video thumbnail'}${status === 'qualified' ? ', L Mark earned' : status === 'review' ? ', pending verification' : ''}`}>
+    <div className={cx('relative shrink-0 overflow-hidden rounded-lg', className)} style={{ background: `linear-gradient(160deg, ${a}, ${b})` }} role="img" aria-label={`${label || 'Video thumbnail'}${status === 'qualified' ? ', verified with the L Mark' : status === 'review' || status === 'info' ? ', pending verification' : ''}`}>
       <div className="absolute inset-x-[20%] top-[14%] bottom-[34%] rounded-t-full bg-white/30" />
       {play && (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className={cx('flex items-center justify-center rounded-full bg-white/85', mark === 'lg' ? 'h-14 w-14' : 'h-7 w-7')}><Play size={mark === 'lg' ? 22 : 12} className="ml-0.5 text-ink" fill="currentColor" /></span>
         </div>
       )}
-      {status === 'qualified' && <LMark size={m.s} className={cx('absolute', m.pad)} />}
-      {status === 'review' && big && <PendingTag className={cx('absolute', mark === 'lg' ? 'left-3 top-3' : 'left-2 top-2')} large={mark === 'lg'} />}
-      {status === 'review' && !big && <span className={cx('absolute flex items-center justify-center rounded-full bg-ink/70 text-white', mark === 'sm' ? 'right-1.5 top-1.5 h-5 w-5' : 'right-1 top-1 h-3.5 w-3.5')} title="Pending verification"><Clock size={mark === 'sm' ? 11 : 8} strokeWidth={3} /></span>}
+      {status === 'qualified' && <LMark size={m.s} shadow className={cx('absolute', m.pad)} />}
+      {(status === 'review' || status === 'info') && big && <PendingTag className={cx('absolute', mark === 'lg' ? 'left-3 top-3' : 'left-2 top-2')} large={mark === 'lg'} />}
+      {(status === 'review' || status === 'info') && !big && <span className={cx('absolute flex items-center justify-center rounded-full bg-ink/70 text-white', mark === 'sm' ? 'right-1.5 top-1.5 h-5 w-5' : 'right-1 top-1 h-3.5 w-3.5')} title="Pending verification"><Clock size={mark === 'sm' ? 11 : 8} strokeWidth={3} /></span>}
       {secs != null && <span className={cx('absolute rounded bg-ink/75 px-1 font-mono text-white tnum', mark === 'lg' ? 'bottom-3 right-3 text-[12px]' : 'bottom-1 right-1 text-[10px]')}>{duration(secs)}</span>}
     </div>
   );
 }
 
 // The L Mark: a gold L tile framed in black with a gold ring. Gold is reserved for earned recognition.
-export function LMark({ size = 18, label = false, text = 'L Earned', className }) {
+export function LMark({ size = 18, className, shadow = false }) {
   return (
-    <span className={cx('inline-flex items-center rounded-[7px] bg-ink/90 shadow-[0_2px_8px_rgba(0,0,0,.35)] ring-1 ring-gold', className)} style={{ padding: Math.max(2, size * 0.14), gap: size * 0.3, paddingRight: label ? size * 0.45 : undefined }}>
-      <span className="flex items-center justify-center rounded-[4px] bg-gold text-ink" style={{ width: size, height: size }}><LGlyph size={size * 0.74} weight={0.24} /></span>
-      {label && <span className="whitespace-nowrap font-mono font-bold uppercase text-gold-text" style={{ fontSize: Math.max(9, size * 0.42), letterSpacing: '0.14em' }}>{text}</span>}
+    <span aria-hidden="true" className={cx('inline-flex shrink-0 select-none items-center justify-center bg-brand font-black leading-none text-ink', shadow && 'shadow-[0_2px_8px_rgba(0,0,0,.35)]', className)} style={{ width: size, height: size, fontSize: size * 0.8, fontFamily: 'Archivo, system-ui, sans-serif', paddingTop: size * 0.04, borderRadius: Math.max(1, size * 0.04) }}>
+      L
     </span>
   );
 }
@@ -265,12 +262,13 @@ export function PageHead({ eyebrow, title, sub, actions }) {
   );
 }
 
-export function Avatar({ name, size = 36 }) {
-  const initials = name.split(' ').map((w) => w[0]).slice(0, 2).join('');
+export function Avatar({ name, size = 36, src }) {
+  if (src) return <img src={src} alt="" className="shrink-0 rounded-full object-cover" style={{ width: size, height: size }} />;
+  const initials = (name || '?').split(' ').map((w) => w[0]).slice(0, 2).join('');
   let h = 0;
-  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360;
+  for (const ch of name || '') h = (h * 31 + ch.charCodeAt(0)) % 360;
   return (
-    <span className="inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-ink" style={{ width: size, height: size, fontSize: size * 0.36, background: `hsl(${h} 45% 86%)` }} aria-hidden="true">
+    <span className="inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-ink" style={{ width: size, height: size, fontSize: size * 0.36, background: `hsl(${h} 30% 88%)` }} aria-hidden="true">
       {initials}
     </span>
   );

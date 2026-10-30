@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
 
-// Plain hash routes like #studio-submit or #admin-creator-c4 (no slashes, so links work everywhere).
+// Plain hash routes (no slashes) so links work on any static host and inside previews.
+// Public:  #home  #standard  #estimator  #verified  #verify-LV-26Q4-XXXXX  #brands  #join
+// Studio:  #studio  #studio-posts  #studio-post-p101  #studio-submit  #studio-campaigns  #studio-campaign-k1  #studio-profile  #studio-receipt-p101
+// Admin:   #admin  #admin-submissions  #admin-verification-p108  #admin-campaigns  #admin-benchmarks  #admin-creators  #admin-creator-c4
 export function parse(hash) {
   const h = (hash || '').replace(/^#/, '');
-  const [area = 'standard', page = '', ...rest] = h.split('-');
-  const valid = ['standard', 'studio', 'admin'];
-  return { area: valid.includes(area) ? area : 'standard', page, id: rest.join('-') };
+  const parts = h.split('-');
+  if (parts[0] === 'studio' || parts[0] === 'admin') {
+    const [area, page = '', ...rest] = parts;
+    return { area, page, id: rest.join('-') };
+  }
+  const [page = 'home', ...rest] = parts;
+  const pages = ['home', 'standard', 'estimator', 'verified', 'verify', 'brands', 'join'];
+  return { area: 'site', page: pages.includes(page) ? page : 'home', id: rest.join('-') };
 }
 
 export function useRoute() {

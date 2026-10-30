@@ -1,287 +1,202 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link2, FileVideo, ArrowLeft, ArrowRight, Check, UploadCloud } from 'lucide-react';
-import { Button, Card, PageHead, Seg, Field, Spinner, DemoNote, cx } from '../../components/ui.jsx';
-import { useStore } from '../../lib/store.jsx';
-import { go } from '../../lib/router.js';
-import { PLATFORMS, RESOLUTIONS, MARKETS } from '../../lib/score.js';
-import { ME, TODAY } from '../../data/mock.js';
+import React, { useState } from 'react';
+import { ArrowLeft, ArrowRight, Check, Link2, Leaf, Megaphone, AlertTriangle } from 'lucide-react';
+import { Button, Card, Field, PageHead, ScoreBar, Spinner, DemoNote, cx } from '../../components/ui.jsx';
+import { useStore, useMe } from '../../lib/store.jsx';
+import { go, href } from '../../lib/router.js';
+import { PLATFORMS, RESOLUTIONS, MARKETS, FORMATS, fmt, lScore, lineFor, formatOf } from '../../lib/score.js';
+import { SAMPLE_URL, platformFromUrl, mockFetch } from '../../lib/lookup.js';
+import { ORGANIC, TODAY } from '../../data/mock.js';
 
-const STEPS = ['Type', 'Details', 'L-Score'];
-
-const SAMPLE_URL = 'https://tiktok.com/@alex.tran.makes/video/7431190040213';
-
-function platformFromUrl(url) {
-  const u = url.toLowerCase();
-  if (!/^https?:\/\//.test(u)) return null;
-  if (u.includes('tiktok.com')) return 'TikTok';
-  if (u.includes('instagram.com')) return 'Instagram';
-  if (u.includes('youtube.com') || u.includes('youtu.be')) return 'YouTube';
-  return null;
-}
-
-// Demo stand-in for the platform APIs: same link always returns the same details.
-function mockFetch(url) {
-  if (url === SAMPLE_URL) return { views: 125000, secs: 30, res: '1080p', title: 'Brow tutorial, the 30 s cut' };
-  const m = url.match(/\/video\/(\d{6,})|\/(?:reel|p)\/([\w-]{5,})|\/shorts\/([\w-]{5,})|[?&]v=([\w-]{5,})|youtu\.be\/([\w-]{5,})/i);
-  if (!m) return null;
-  let h = 7;
-  for (const ch of url) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return {
-    views: Math.round((12000 + (h % 380000)) / 100) * 100,
-    secs: [15, 20, 25, 30, 35, 45, 60][h % 7],
-    res: h % 5 === 0 ? '720p' : '1080p',
-    title: '',
-  };
-}
-
-function FromLink() {
-  return <span className="ml-1.5 rounded-full bg-paper px-2 py-0.5 align-middle text-[11px] font-semibold text-ink-2 ring-1 ring-inset ring-line">From link</span>;
-}
+const STEPS = ['Platform', 'Link', 'Campaign', 'Details', 'Submit'];
 
 function Stepper({ step }) {
   return (
-    <ol className="flex items-center gap-2" aria-label="Progress">
+    <ol className="scroll-x flex items-center gap-2" aria-label="Progress">
       {STEPS.map((s, i) => (
-        <li key={s} className="flex items-center gap-2" aria-current={i === step ? 'step' : undefined}>
+        <li key={s} className="flex shrink-0 items-center gap-2" aria-current={i === step ? 'step' : undefined}>
           <span className={cx('flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold', i < step ? 'bg-ink text-white' : i === step ? 'bg-brand text-white' : 'border border-line-strong text-mute')}>
             {i < step ? <Check size={14} /> : i + 1}
           </span>
-          <span className={cx('text-[13px] font-semibold', i === step ? 'text-ink' : 'text-mute')}>{s}</span>
-          {i < STEPS.length - 1 && <span className="mx-1 h-px w-5 bg-line-strong sm:w-10" />}
+          <span className={cx('text-[13px] font-semibold', i === step ? 'text-ink' : 'text-mute', i !== step && 'hidden sm:inline')}>{s}</span>
+          {i < STEPS.length - 1 && <span className="mx-0.5 h-px w-4 bg-line-strong sm:w-8" />}
         </li>
       ))}
     </ol>
   );
 }
 
-function resFromHeight(w, h) {
-  const s = Math.min(w, h);
-  if (s >= 2000) return '4K';
-  if (s >= 1300) return '1440p';
-  if (s >= 900) return '1080p';
-  return '720p';
+function Choice({ on, onClick, children, className }) {
+  return (
+    <button type="button" role="radio" aria-checked={on} onClick={onClick} className={cx('flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors', on ? 'border-ink bg-ink text-white' : 'border-line bg-white hover:border-ink', className)}>
+      <span className={cx('mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2', on ? 'border-white' : 'border-line-strong')}>{on && <span className="h-2.5 w-2.5 rounded-full bg-white" />}</span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">{children}</span>
+    </button>
+  );
 }
 
-export default function Submit() {
-  const { state, dispatch } = useStore();
-  const me = state.creators.find((c) => c.id === ME);
+export default function Submit({ preset }) {
+  const { state, dispatch, notify } = useStore();
+  const me = useMe();
+  const accounts = me.accounts?.length ? me.accounts : [{ platform: me.platform, handle: me.handle }];
+  const joined = state.campaigns.filter((c) => c.status === 'Live' && me.campaigns.includes(c.id) && c.markets.includes(me.market));
+  const presetOk = joined.some((c) => c.id === preset);
+
   const [step, setStep] = useState(0);
-  const [type, setType] = useState('published');
-  const [f, setF] = useState({ title: '', platform: 'TikTok', url: '', campaignId: '', market: me.market, secs: 30, res: '1080p', views: '' });
-  const [file, setFile] = useState(null);
-  const [errors, setErrors] = useState({});
-  const [phase, setPhase] = useState(0);
-  const fileRef = useRef(null);
-  const set = (k) => (v) => setF((x) => ({ ...x, [k]: v && v.target ? v.target.value : v }));
-  const campaigns = state.campaigns.filter((c) => c.status === 'Live');
-
+  const [f, setF] = useState({ platform: accounts[0].platform, url: '', campaignId: presetOk ? preset : '', title: '', market: me.market, secs: 30, res: '1080p', views: '', longSecs: '' });
   const [lookup, setLookup] = useState({ status: 'idle' });
+  const [err, setErr] = useState({});
+  const set = (k) => (v) => setF((x) => ({ ...x, [k]: v && v.target ? v.target.value : v }));
+  const account = accounts.find((a) => a.platform === f.platform);
 
-  // Paste a link: detect the platform and pull views, duration and resolution from the post.
-  useEffect(() => {
-    if (type !== 'published') return;
-    const url = f.url.trim();
-    const plat = platformFromUrl(url);
-    if (!plat) { setLookup({ status: 'idle' }); return; }
-    setF((x) => (x.platform === plat ? x : { ...x, platform: plat }));
-    setLookup({ status: 'loading', platform: plat });
-    const t = setTimeout(() => {
-      const meta = mockFetch(url);
-      if (!meta) { setLookup({ status: 'error', platform: plat }); return; }
-      setF((x) => ({ ...x, views: String(meta.views), secs: meta.secs, res: meta.res, title: x.title || meta.title }));
-      setErrors((e) => ({ ...e, url: null, views: null, secs: null }));
-      setLookup({ status: 'done', platform: plat, meta });
-    }, 900);
-    return () => clearTimeout(t);
-  }, [f.url, type]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fromLink = (k) => lookup.status === 'done' && String(f[k]) === String(lookup.meta[k]);
-
-  const fillSample = () => {
-    setF((x) => ({ ...x, title: '', platform: 'TikTok', url: SAMPLE_URL, campaignId: 'k2' }));
-    setErrors({});
+  const readLink = (url) => {
+    const platform = platformFromUrl(url);
+    if (!platform) return setLookup({ status: 'error', msg: 'Paste the full post link, starting with https://' });
+    if (platform !== f.platform) return setLookup({ status: 'error', msg: `That is a ${platform} link. You chose ${f.platform}.` });
+    if (state.posts.some((p) => p.url === url.trim())) return setLookup({ status: 'error', msg: 'This post has already been submitted.' });
+    setLookup({ status: 'loading' });
+    setTimeout(() => {
+      const d = mockFetch(url);
+      if (!d) return setLookup({ status: 'error', msg: 'That link does not look like a single video post.' });
+      const handle = account?.handle?.replace('@', '').toLowerCase();
+      const mismatch = platform === 'TikTok' && handle && !url.toLowerCase().includes(`@${handle}`);
+      setF((x) => ({ ...x, url: url.trim(), secs: d.secs, res: d.res, views: String(d.views), title: x.title || d.title }));
+      setLookup({ status: 'ok', mismatch });
+    }, 700);
   };
 
-  const onFile = (e) => {
-    const fl = e.target.files && e.target.files[0];
-    if (!fl) return;
-    if (!fl.type.startsWith('video/')) {
-      setErrors((x) => ({ ...x, file: 'That file is not a video. Choose an MP4 or MOV.' }));
-      return;
+  const next = () => {
+    const er = {};
+    if (step === 1 && lookup.status !== 'ok') er.url = 'Read the link first';
+    if (step === 3) {
+      if (!f.title.trim()) er.title = 'Add a short title';
+      if (!(Number(f.secs) > 0)) er.secs = 'Add the duration';
+      if (!(Number(f.views) >= 0) || f.views === '') er.views = 'Add the view count';
+      if (f.longSecs && !(Number(f.longSecs) > Number(f.secs))) er.longSecs = 'The long cut must be longer than this post';
     }
-    const url = URL.createObjectURL(fl);
-    const v = document.createElement('video');
-    v.preload = 'metadata';
-    v.onloadedmetadata = () => {
-      const secs = Math.max(1, Math.round(v.duration || 0));
-      setF((x) => ({ ...x, secs, res: v.videoWidth ? resFromHeight(v.videoWidth, v.videoHeight) : x.res, title: x.title || fl.name.replace(/\.[^.]+$/, '') }));
-      setFile({ name: fl.name, secs, w: v.videoWidth, h: v.videoHeight });
-      setErrors((x) => ({ ...x, file: null }));
-      URL.revokeObjectURL(url);
-    };
-    v.onerror = () => {
-      setFile({ name: fl.name });
-      setErrors((x) => ({ ...x, file: 'Could not read this video in the browser. Enter duration and resolution by hand.' }));
-    };
-    v.src = url;
+    setErr(er);
+    if (!Object.keys(er).length) setStep(step + 1);
   };
 
-  const validate = () => {
-    const e = {};
-    if (!f.title.trim()) e.title = 'Give the video a title so you can find it later.';
-    const secs = Number(f.secs);
-    if (!Number.isFinite(secs) || secs < 1 || secs > 600) e.secs = 'Enter a duration between 1 and 600 seconds.';
-    if (type === 'published') {
-      const host = PLATFORMS[f.platform].host;
-      if (!/^https?:\/\//i.test(f.url) || !f.url.toLowerCase().includes(host)) e.url = `Paste the full ${f.platform} link, starting with https:// and containing ${host}.`;
-      else if (state.posts.some((p) => p.url === f.url.trim())) e.url = 'This post was already submitted. Find it in My posts.';
-      const views = Number(String(f.views).replace(/[, ]/g, ''));
-      if (!Number.isInteger(views) || views < 1) e.views = 'Enter the current view count as a whole number.';
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
+  const post = { secs: Number(f.secs) || 1, res: f.res, platform: f.platform, market: f.market };
+  const est = lScore(post);
+  const line = lineFor(state.benchmarks, f.market, post.secs);
+  const campaignName = f.campaignId ? state.campaigns.find((c) => c.id === f.campaignId)?.name : ORGANIC;
 
-  const calculate = () => {
-    if (!validate()) return;
-    setStep(2);
-    setPhase(0);
-  };
-
-  useEffect(() => {
-    if (step !== 2) return;
-    if (phase < 3) {
-      const t = setTimeout(() => setPhase((p) => p + 1), 550);
-      return () => clearTimeout(t);
-    }
+  const submit = () => {
     const id = `p${Date.now().toString(36)}`;
-    const post = {
-      id, creatorId: ME, title: f.title.trim(), platform: f.platform, url: type === 'published' ? f.url.trim() : '',
-      campaignId: f.campaignId || null, secs: Number(f.secs), res: f.res, market: f.market,
-      views: type === 'published' ? Number(String(f.views).replace(/[, ]/g, '')) : 0,
-      type, status: type === 'draft' ? 'draft' : 'review', submitted: TODAY, verified: null, notes: [], thumb: Math.floor(Math.random() * 8),
-    };
-    dispatch({ type: 'submit', post });
+    dispatch({
+      type: 'submit',
+      post: {
+        id, creatorId: me.id, title: f.title.trim(), platform: f.platform, url: f.url, secs: post.secs, res: f.res, market: f.market,
+        views: Number(f.views), longSecs: f.longSecs ? Number(f.longSecs) : undefined, campaignId: f.campaignId || null,
+        status: 'review', submitted: TODAY, verified: null, thumb: Math.floor(Math.random() * 8), notes: [],
+      },
+    });
+    notify('Submitted · pending verification');
     go(`studio-post-${id}`);
-  }, [step, phase]); // eslint-disable-line react-hooks/exhaustive-deps
+  };
 
   return (
-    <div className="flex max-w-3xl flex-col gap-8">
-      <PageHead eyebrow="Submit a video" title={step === 0 ? 'What are you submitting?' : step === 1 ? 'Video details' : 'Calculating your L-Score'} />
+    <div className="flex max-w-[760px] flex-col gap-6">
+      <PageHead eyebrow="Submit a Post" title="Submit a published post" sub="Verification checks the post, its account and its inputs, then compares its L-Score with the L line." />
       <Stepper step={step} />
-
-      {step === 0 && (
-        <div className="flex flex-col gap-6">
-          <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Submission type">
-            {[
-              { v: 'published', t: 'Published social media post', d: 'Paste the link to a live post. Verified posts can earn the L Mark.', Icon: Link2 },
-              { v: 'draft', t: 'Draft video', d: 'Check a cut before you post. You get an estimated L-Score. Drafts never receive the L Mark.', Icon: FileVideo },
-            ].map((o) => {
-              const on = type === o.v;
+      <Card className="flex flex-col gap-5 p-5 sm:p-6">
+        {step === 0 && (
+          <div role="radiogroup" aria-label="Platform" className="flex flex-col gap-3">
+            <h2 className="text-[18px] font-bold">Where is the post published?</h2>
+            {Object.keys(PLATFORMS).map((pl) => {
+              const acc = accounts.find((a) => a.platform === pl);
               return (
-                <button key={o.v} type="button" role="radio" aria-checked={on} onClick={() => setType(o.v)} className={cx('flex flex-col gap-3 rounded-2xl border-2 bg-white p-5 text-left transition-colors', on ? 'border-ink' : 'border-line hover:border-line-strong')}>
-                  <span className="flex items-center justify-between">
-                    <span className={cx('flex h-11 w-11 items-center justify-center rounded-xl', on ? 'bg-brand text-white' : 'bg-paper')}><o.Icon size={20} /></span>
-                    <span className={cx('flex h-5 w-5 items-center justify-center rounded-full border-2', on ? 'border-ink bg-ink' : 'border-line-strong')}>{on && <span className="h-2 w-2 rounded-full bg-brand" />}</span>
-                  </span>
-                  <b className="text-[17px]">{o.t}</b>
-                  <span className="text-[14px] text-mute">{o.d}</span>
-                </button>
+                <Choice key={pl} on={f.platform === pl} onClick={() => { set('platform')(pl); setLookup({ status: 'idle' }); }} className={!acc ? 'opacity-50' : ''}>
+                  <b>{pl}</b>
+                  <span className={cx('text-[13px]', f.platform === pl ? 'text-white/70' : 'text-mute')}>{acc ? acc.handle : 'No account on your profile'}</span>
+                </Choice>
               );
             })}
+            {!account && <p className="flex items-center gap-1.5 text-[13px] text-bad"><AlertTriangle size={14} /> Add a {f.platform} account in <a className="underline" href={href('studio-profile')}>My Profile</a> first.</p>}
           </div>
-          <div className="flex justify-end"><Button onClick={() => setStep(1)}>Continue <ArrowRight size={16} /></Button></div>
-        </div>
-      )}
+        )}
 
-      {step === 1 && (
-        <form className="flex flex-col gap-6" onSubmit={(e) => { e.preventDefault(); calculate(); }} noValidate>
-          <Card className="flex flex-col gap-5 p-5 sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="eyebrow">{type === 'published' ? 'Published post' : 'Draft video'}</span>
-              {type === 'published' && <button type="button" onClick={fillSample} className="text-[13px] font-semibold text-brand-deep hover:underline">Fill with a sample post</button>}
-            </div>
-            <Field label="Social platform">
-              <Seg label="Social platform" options={Object.keys(PLATFORMS)} value={f.platform} onChange={set('platform')} />
+        {step === 1 && (
+          <div className="flex flex-col gap-3">
+            <h2 className="text-[18px] font-bold">Paste the post link</h2>
+            <Field label={`${f.platform} post link`} htmlFor="s-url" error={lookup.status === 'error' ? lookup.msg : err.url} hint={`It must be public and posted from ${account?.handle}.`}>
+              <div className="flex gap-2">
+                <input id="s-url" className="input min-w-0 flex-1 font-mono text-[13px]" value={f.url} onChange={(e) => { set('url')(e.target.value); setLookup({ status: 'idle' }); }} placeholder="https://…" />
+                <Button onClick={() => readLink(f.url)} disabled={!f.url || lookup.status === 'loading'}>{lookup.status === 'loading' ? <Spinner /> : <Link2 size={16} />} Read</Button>
+              </div>
             </Field>
-            {type === 'published' ? (
-              <Field label="Video URL" htmlFor="f-url" error={errors.url}>
-                <input id="f-url" className={cx('input', errors.url && 'input-error')} inputMode="url" placeholder={`https://${PLATFORMS[f.platform].host}/…`} value={f.url} onChange={set('url')} />
-                {lookup.status === 'loading' && <span className="flex items-center gap-2 text-[13px] text-mute"><Spinner size={13} /> Reading the post from {lookup.platform}…</span>}
-                {lookup.status === 'done' && <span className="flex items-start gap-1.5 text-[13px] text-ink-2"><Check size={15} className="mt-[2px] shrink-0 text-brand-deep" /><span>Pulled from the post: <b className="font-mono">{Number(lookup.meta.views).toLocaleString('en-US')} views · {lookup.meta.secs} s · {lookup.meta.res}</b>. You can still edit them.</span></span>}
-                {lookup.status === 'error' && <span className="text-[13px] text-warn">Couldn't read a post from this link. Check it's a public post link, or enter views and duration by hand.</span>}
-              </Field>
-            ) : (
-              <Field label="Upload video" error={errors.file} hint="Read in your browser to fill duration and resolution. Nothing is uploaded in this demo.">
-                <label htmlFor="f-file" className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-line-strong bg-paper px-4 py-7 text-center hover:border-ink focus-within:border-ink">
-                  <UploadCloud size={26} className="text-mute" />
-                  {file ? (
-                    <span className="text-[14px]"><b>{file.name}</b>{file.secs ? <span className="block font-mono text-[12px] text-mute">{file.secs} s · {file.w}×{file.h}</span> : null}</span>
-                  ) : (
-                    <span className="text-[14px]"><b>Choose a video</b> <span className="text-mute">or drop it here</span></span>
-                  )}
-                  <input ref={fileRef} id="f-file" type="file" accept="video/*" className="sr-only" onChange={onFile} />
-                </label>
-              </Field>
+            {!f.url && f.platform === 'TikTok' && me.id === 'c1' && <button type="button" className="self-start text-[13px] font-semibold underline" onClick={() => set('url')(SAMPLE_URL)}>Use a sample link</button>}
+            {lookup.status === 'ok' && (
+              <div className="flex flex-col gap-2 rounded-xl bg-paper p-4 text-[14px]">
+                <span className="flex items-center gap-2 font-semibold"><Check size={16} /> Post found</span>
+                <span className="text-mute">{f.secs} s · {f.res} · {fmt(Number(f.views))} views. You can check these in Details.</span>
+                {lookup.mismatch && <span className="flex items-start gap-1.5 text-warn"><AlertTriangle size={14} className="mt-0.5 shrink-0" /> The link does not show {account.handle}. Verification will reject it if the account does not match.</span>}
+              </div>
             )}
-            <Field label="Title" htmlFor="f-title" error={errors.title}>
-              <input id="f-title" className={cx('input', errors.title && 'input-error')} placeholder="e.g. 30-second morning routine" value={f.title} onChange={set('title')} />
-            </Field>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Campaign (optional)" htmlFor="f-camp">
-                <select id="f-camp" className="input" value={f.campaignId} onChange={set('campaignId')}>
-                  <option value="">No campaign</option>
-                  {campaigns.map((c) => <option key={c.id} value={c.id}>{c.name} · {c.brand}{me.campaigns.includes(c.id) ? '' : ' (not joined)'}</option>)}
-                </select>
-              </Field>
-              <Field label="Market" htmlFor="f-market" hint="Where most of your audience watches.">
-                <select id="f-market" className="input" value={f.market} onChange={set('market')}>
-                  {Object.entries(MARKETS).map(([k, m]) => <option key={k} value={k}>{m.name}</option>)}
-                </select>
-              </Field>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label={<>Video duration (seconds){fromLink('secs') && <FromLink />}</>} htmlFor="f-secs" error={errors.secs}>
-                <div className="flex flex-col gap-2">
-                  <input id="f-secs" type="number" min="1" max="600" className={cx('input font-mono', errors.secs && 'input-error')} value={f.secs} onChange={set('secs')} />
-                  <div className="flex gap-1.5">
-                    {[15, 30, 45, 60].map((n) => (
-                      <button key={n} type="button" onClick={() => set('secs')(n)} className={cx('h-8 flex-1 rounded-full border font-mono text-[12px] font-semibold', Number(f.secs) === n ? 'border-ink bg-ink text-white' : 'border-line-strong hover:border-ink')}>{n}s</button>
-                    ))}
-                  </div>
-                </div>
-              </Field>
-              <Field label={<>Resolution{fromLink('res') && <FromLink />}</>}>
-                <Seg label="Resolution" options={Object.keys(RESOLUTIONS)} value={f.res} onChange={set('res')} />
-              </Field>
-            </div>
-            {type === 'published' && (
-              <Field label={<>Views{fromLink('views') && <FromLink />}</>} htmlFor="f-views" error={errors.views} hint={type === 'published' ? 'Filled in from the link. Edit it if the post has grown since.' : undefined}>
-                <input id="f-views" inputMode="numeric" className={cx('input font-mono', errors.views && 'input-error')} placeholder="125000" value={f.views} onChange={set('views')} />
-              </Field>
-            )}
-          </Card>
-          <div className="flex justify-between gap-2">
-            <Button variant="ghost" onClick={() => setStep(0)}><ArrowLeft size={16} /> Back</Button>
-            <Button type="submit" disabled={lookup.status === 'loading'}>Calculate L-Score <ArrowRight size={16} /></Button>
+            <DemoNote>Demo: details are read from the link with sample data. A live version would read them from the platform.</DemoNote>
           </div>
-          <DemoNote>{type === 'published' ? 'In the live product, views, duration and resolution come from the platform once the creator connects their account. Here the lookup is simulated. ' : ''}The L-Score uses a fixed demo formula. It is illustrative, not a real carbon calculation.</DemoNote>
-        </form>
-      )}
+        )}
 
-      {step === 2 && (
-        <Card className="flex flex-col items-center gap-6 px-6 py-12 text-center" aria-live="polite">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white"><Spinner size={24} /></span>
-          <ul className="flex flex-col gap-2 text-left text-[15px]">
-            {['Reading the video details', 'Applying the L Standard', `Comparing with the ${MARKETS[f.market].name} L line`].map((t, i) => (
-              <li key={t} className={cx('flex items-center gap-2 transition-opacity', phase > i ? 'opacity-100' : phase === i ? 'opacity-100' : 'opacity-30')}>
-                {phase > i ? <Check size={16} className="text-brand-deep" /> : phase === i ? <Spinner size={14} /> : <span className="h-4 w-4" />}
-                {t}
-              </li>
+        {step === 2 && (
+          <div role="radiogroup" aria-label="Campaign" className="flex flex-col gap-3">
+            <h2 className="text-[18px] font-bold">Is this post for a campaign?</h2>
+            {joined.map((c) => (
+              <Choice key={c.id} on={f.campaignId === c.id} onClick={() => set('campaignId')(c.id)}>
+                <b className="flex items-center gap-1.5"><Megaphone size={14} /> {c.name}</b>
+                <span className={cx('text-[13px]', f.campaignId === c.id ? 'text-white/70' : 'text-mute')}>{c.brand} · submit by {c.deadline}</span>
+              </Choice>
             ))}
-          </ul>
-        </Card>
-      )}
+            <Choice on={!f.campaignId} onClick={() => set('campaignId')('')}>
+              <b className="flex items-center gap-1.5"><Leaf size={14} /> {ORGANIC}</b>
+              <span className={cx('text-[13px]', !f.campaignId ? 'text-white/70' : 'text-mute')}>Your own content, not tied to a brief. It counts towards L Creator the same way.</span>
+            </Choice>
+            {!joined.length && <p className="text-[13px] text-mute">You have not joined a live campaign in {MARKETS[me.market].name}. <a href={href('studio-campaigns')} className="font-semibold text-ink underline">See campaigns</a></p>}
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="flex flex-col gap-4">
+            <h2 className="text-[18px] font-bold">Check the details</h2>
+            <Field label="Title" htmlFor="s-title" error={err.title}><input id="s-title" className="input" value={f.title} onChange={set('title')} placeholder="What the post is" /></Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Duration (seconds)" htmlFor="s-secs" error={err.secs} hint={FORMATS[formatOf(post.secs)].name}><input id="s-secs" type="number" min="1" className="input font-mono" value={f.secs} onChange={set('secs')} /></Field>
+              <Field label="Top resolution" htmlFor="s-res"><select id="s-res" className="input" value={f.res} onChange={set('res')}>{Object.keys(RESOLUTIONS).map((r) => <option key={r}>{r}</option>)}</select></Field>
+              <Field label="Views today" htmlFor="s-views" error={err.views}><input id="s-views" type="number" min="0" className="input font-mono" value={f.views} onChange={set('views')} /></Field>
+              <Field label="Main market" htmlFor="s-market"><select id="s-market" className="input" value={f.market} onChange={set('market')}>{Object.entries(MARKETS).map(([k, m]) => <option key={k} value={k}>{m.name}</option>)}</select></Field>
+            </div>
+            <Field label="Long cut length (optional)" htmlFor="s-long" error={err.longSecs} hint="If this post is a shorter cut of a longer video, add the long cut’s length. The post then gets two impact receipts: the long cut and the short cut.">
+              <input id="s-long" type="number" min="1" className="input w-40 font-mono" value={f.longSecs} onChange={set('longSecs')} placeholder="seconds" />
+            </Field>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="flex flex-col gap-4">
+            <h2 className="text-[18px] font-bold">Ready to submit</h2>
+            <dl className="grid gap-x-6 gap-y-2 text-[14px] sm:grid-cols-2">
+              {[['Title', f.title], ['Platform', `${f.platform} · ${account?.handle}`], ['Campaign', campaignName], ['Market', MARKETS[f.market].name], ['Inputs', `${post.secs} s · ${f.res} · ${fmt(Number(f.views))} views`], ['Long cut', f.longSecs ? `${f.longSecs} s` : 'None']].map(([k, v]) => (
+                <div key={k} className="flex flex-col border-t border-line pt-2"><dt className="text-[12px] text-mute">{k}</dt><dd className="break-words font-semibold">{v}</dd></div>
+              ))}
+              <div className="flex flex-col border-t border-line pt-2 sm:col-span-2"><dt className="text-[12px] text-mute">Link</dt><dd className="break-all font-mono text-[12px]">{f.url}</dd></div>
+            </dl>
+            <div className="flex flex-col gap-1 rounded-xl border border-dashed border-line-strong p-4">
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-mute">Estimated L-Score · not official until verified</span>
+              <span className="display text-[34px] font-black tnum">{fmt(est)} <span className="text-[14px] font-normal text-mute">g per 1,000 views</span></span>
+              <ScoreBar score={est} line={line} compact />
+              <span className="text-[13px] text-mute">L line {fmt(line)} g for {MARKETS[f.market].name}, {FORMATS[formatOf(post.secs)].name.toLowerCase()}.</span>
+            </div>
+            <p className="text-[13px] text-mute">After you submit, the post shows as pending verification. The L Mark appears only if it is verified at or below its L line.</p>
+          </div>
+        )}
+
+        <div className="flex justify-between gap-2 border-t border-line pt-4">
+          {step > 0 ? <Button variant="ghost" onClick={() => setStep(step - 1)}><ArrowLeft size={16} /> Back</Button> : <span />}
+          {step < 4
+            ? <Button onClick={next} disabled={step === 0 && !account}>Continue <ArrowRight size={16} /></Button>
+            : <Button variant="brand" onClick={submit}>Submit for verification</Button>}
+        </div>
+      </Card>
     </div>
   );
 }
