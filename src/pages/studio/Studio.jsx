@@ -215,7 +215,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHead eyebrow={`${QUARTER.label} · ${MARKETS[me.market].name}`} title={`Hi, ${me.name.split(' ')[0]}`} sub="Your posts, their verification status, and your progress this quarter." actions={<Button variant="brand" as="a" href={href('studio-submit')}><Upload size={16} /> Submit a post</Button>} />
+      <PageHead eyebrow={`${QUARTER.label} · ${MARKETS[me.market].name}`} title={`Hi, ${me.name.split(' ')[0]}`} sub="Your posts, their verification status, and your progress this quarter." actions={<><Button variant="outline" as="a" href={href('estimator')}>Estimate a video</Button><Button variant="brand" as="a" href={href('studio-submit')}><Upload size={16} /> Submit a post</Button></>} />
 
       {needs.length > 0 && (
         <a href={href(`studio-post-${needs[0].id}`)} className="flex items-start gap-3 rounded-2xl border border-warn/40 bg-warn-bg p-4 text-[14px] text-warn">

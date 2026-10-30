@@ -3,7 +3,7 @@ import { Search, ShieldCheck } from 'lucide-react';
 import { Button, Card, Empty } from '../../components/ui.jsx';
 import { PostCard, useVerifiedPosts } from '../../components/PostBits.jsx';
 import { useStore, campaignLabel } from '../../lib/store.jsx';
-import { go } from '../../lib/router.js';
+import { go, href } from '../../lib/router.js';
 import { MARKETS, PLATFORMS, FORMATS } from '../../lib/score.js';
 import { ORGANIC } from '../../data/mock.js';
 import { PageHero, SampleNote, FilterSelect } from './common.jsx';
@@ -43,9 +43,11 @@ export function VerifyLookup({ compact }) {
 
 const PAGE = 12;
 
-export default function Verified() {
+export default function Verified({ id }) {
   const { state } = useStore();
-  const all = useVerifiedPosts();
+  const owner = state.creators.find((c) => c.id === id) || null;
+  const every = useVerifiedPosts();
+  const all = useMemo(() => (owner ? every.filter((p) => p.creatorId === owner.id) : every), [every, owner]);
   const [fl, setFl] = useState({ market: '', platform: '', campaign: '', format: '' });
   const [n, setN] = useState(PAGE);
   const set = (k) => (v) => { setFl((x) => ({ ...x, [k]: v })); setN(PAGE); };
@@ -60,9 +62,15 @@ export default function Verified() {
 
   return (
     <main>
-      <PageHero eyebrow="Public gallery" title="Verified posts" intro="Every post here was submitted through Creator Studio, verified, and came in at or below the L line for its market and format.">
-        <div className="max-w-xl pt-2"><VerifyLookup /></div>
-      </PageHero>
+      {owner ? (
+        <PageHero eyebrow="Portfolio · verified posts" title={owner.name} intro={`Posts by ${owner.name} (${owner.handle}) that were verified and came in at or below the L line for their market and format. Each one links to its verification page.`}>
+          <a href={href('verified')} className="inline-flex items-center gap-1 text-[14px] font-semibold underline">All verified posts</a>
+        </PageHero>
+      ) : (
+        <PageHero eyebrow="Public gallery" title="Verified posts" intro="Every post here was submitted through Creator Studio, verified, and came in at or below the L line for its market and format.">
+          <div className="max-w-xl pt-2"><VerifyLookup /></div>
+        </PageHero>
+      )}
       <section className="gutter py-10">
         <div className="mx-auto flex max-w-[1240px] flex-col gap-6">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:items-end">

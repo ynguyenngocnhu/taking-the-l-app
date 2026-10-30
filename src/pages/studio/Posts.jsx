@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, ArrowUpRight, ShieldCheck, Share2, Upload, ArrowDownRight, AlertTriangle, Clock, Send } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, ShieldCheck, Share2, Upload, ArrowDownRight, AlertTriangle, Clock, Send, Award, Eye, Briefcase, RotateCcw, ArrowRight } from 'lucide-react';
+import { JOURNEY } from '../../components/Journey.jsx';
 import { Button, Card, Empty, Field, LMark, PageHead, ScoreBar, Seg, StatusPill, Thumb, DemoNote, cx } from '../../components/ui.jsx';
 import { CampaignTag, ImpactReceipt, ShareCardModal, contextLabel } from '../../components/PostBits.jsx';
 import { useStore, useMe, enrich, campaignLabel } from '../../lib/store.jsx';
@@ -156,6 +157,46 @@ function InfoReply({ p }) {
   );
 }
 
+// Where this post sits in the journey, and what comes next. Gives creators a reason to come back.
+function NextSteps({ p, me }) {
+  const q = p.status === 'qualified';
+  const items = q
+    ? [
+      { k: 'Recognition', Icon: Award, d: 'The L Mark and a public verification page. The post is in your portfolio of verified posts.', a: { to: `verified-${me.id}`, label: 'Your portfolio' } },
+      { k: 'Visibility', Icon: Eye, d: 'Listed in the public gallery, where brands find qualifying content by market, platform and campaign.', a: { to: 'verified', label: 'Public gallery' } },
+      { k: 'Opportunity', Icon: Briefcase, d: 'Proposed for the pilot: L-Media Fund reach and a Lighter Rate on campaign posts. Not guaranteed.', a: { to: 'studio-campaigns', label: 'Open campaigns' } },
+    ]
+    : null;
+  const step = q ? ['recognised', 'discovered'] : pending(p) || p.status === 'info' ? ['verify'] : ['learn'];
+  return (
+    <Card className="flex flex-col gap-4 p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-[17px] font-bold">{q ? 'What this post opens up' : pending(p) || p.status === 'info' ? 'What happens next' : 'Your next video'}</h2>
+        <ol className="flex flex-wrap items-center gap-1 text-[11px] font-semibold uppercase tracking-wider">
+          {JOURNEY.slice(1).map((s) => <li key={s.key} className={cx('rounded-full px-2 py-1', step.includes(s.key) ? 'bg-ink text-white' : 'text-mute')}>{s.name}</li>)}
+        </ol>
+      </div>
+      {q && (
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {items.map(({ k, Icon, d, a }) => (
+            <li key={k} className="flex flex-col gap-2 rounded-xl bg-paper p-4">
+              <span className="flex items-center gap-2"><Icon size={17} className={k === 'Opportunity' ? 'text-gold-deep' : ''} /><b className="text-[15px]">{k}</b></span>
+              <span className="flex-1 text-[13px] text-ink-2">{d}</span>
+              <a href={href(a.to)} className="inline-flex items-center gap-1 text-[13px] font-semibold underline">{a.label} <ArrowRight size={13} /></a>
+            </li>
+          ))}
+        </ul>
+      )}
+      {(pending(p) || p.status === 'info') && <p className="text-[14px] text-ink-2">Once verified, a post at or under the L line carries the L Mark, gets a public verification page, joins your portfolio and appears in the gallery where brands look. A post over the line still gets an official score and tips for the next one.</p>}
+      {p.status === 'not' && <p className="text-[14px] text-ink-2">This score is official and stays as it is. Use what you learned on the next video: estimate it before you post, then submit it once it is live.</p>}
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
+        <Button variant={q ? 'outline' : 'primary'} as="a" href={href('estimator')}><RotateCcw size={16} /> Estimate your next video</Button>
+        <span className="text-[13px] text-mute">Every post is scored on its own, so each new video is a fresh chance to qualify.</span>
+      </div>
+    </Card>
+  );
+}
+
 export function PostDetail({ id }) {
   const { state } = useStore();
   const me = useMe();
@@ -217,6 +258,7 @@ export function PostDetail({ id }) {
             </Card>
           )}
           {p.status === 'not' && <WhyNot p={p} />}
+          {p.status !== 'rejected' && <NextSteps p={p} me={me} />}
 
           <Card className="p-5">
             <dl className="flex flex-col [&>div:first-child]:border-0">

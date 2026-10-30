@@ -33,7 +33,7 @@ export function PostCard({ p, creator, campaign }) {
         <div className="flex items-center gap-2.5">
           <Avatar name={creator.name} src={creator.avatar} size={28} />
           <div className="flex min-w-0 flex-col leading-tight">
-            <b className="truncate text-[14px]">{creator.name}</b>
+            <a href={href(`verified-${creator.id}`)} className="truncate text-[14px] font-bold hover:underline">{creator.name}</a>
             <span className="truncate text-[12px] text-mute">{p.platform} · {creator.handle}</span>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, Film, Calculator, Send, ScanSearch, BadgeCheck } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { Journey, AfterVerify } from '../../components/Journey.jsx';
 import { Button, Card, LMark, cx } from '../../components/ui.jsx';
 import { PostCard, useVerifiedPosts } from '../../components/PostBits.jsx';
 import { useStore, campaignLabel } from '../../lib/store.jsx';
@@ -54,38 +55,14 @@ function Intro() {
 }
 
 function HowItWorks() {
-  const steps = [
-    { Icon: Film, t: 'Create or publish a video', d: 'Any platform. Nothing to add to the video itself.' },
-    { Icon: Calculator, t: 'Estimate its L-Score', d: 'Use the public estimator. No sign-in needed.' },
-    { Icon: Send, t: 'Submit the published post', d: 'Paste the post link in Creator Studio.' },
-    { Icon: ScanSearch, t: 'Checked against the L line', d: 'The platform verifies the post for its market and format.' },
-    { Icon: BadgeCheck, t: 'Qualifying posts get the L Mark', d: 'With a verification ID and a public verification page.' },
-  ];
   return (
     <Section eyebrow="How it works" title="Estimate first. Verification makes it official." className="bg-paper">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_3fr]">
-        {[steps.slice(0, 2), steps.slice(2)].map((group, gi) => (
-          <div key={gi} className={cx('flex flex-col gap-4 rounded-2xl p-5', gi === 0 ? 'border border-dashed border-line-strong bg-white' : 'bg-ink text-white')}>
-            <span className={cx('eyebrow', gi === 1 && 'text-white/50')}>{gi === 0 ? 'Estimate · anyone' : 'Official · after verification'}</span>
-            <ol className={cx('grid gap-4', gi === 0 ? 'sm:grid-cols-2' : 'sm:grid-cols-3')}>
-              {group.map((s, i) => {
-                const n = gi === 0 ? i + 1 : i + 3;
-                return (
-                  <li key={s.t} className="flex flex-col gap-2">
-                    <span className="flex items-center gap-2">
-                      <span className={cx('flex h-8 w-8 items-center justify-center rounded-full font-mono text-[13px] font-bold', gi === 0 ? 'bg-paper' : 'bg-white/10')}>{n}</span>
-                      {n === 5 ? <LMark size={22} /> : <s.Icon size={18} className={gi === 0 ? 'text-mute' : 'text-white/60'} />}
-                    </span>
-                    <b className="text-[15px]">{s.t}</b>
-                    <span className={cx('text-[14px]', gi === 0 ? 'text-mute' : 'text-white/65')}>{s.d}</span>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-        ))}
+      <Journey />
+      <div className="flex flex-col gap-3 pt-4">
+        <h3 className="text-[18px] font-bold">What a qualifying post opens up</h3>
+        <AfterVerify />
       </div>
-      <p className="text-[14px] text-mute">An estimate is a guide. Only a verified post can carry the L Mark.</p>
+      <p className="text-[14px] text-mute">An estimate is a guide. Only a published post that passes verification can carry the L Mark.</p>
     </Section>
   );
 }

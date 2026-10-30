@@ -6,6 +6,7 @@ import { href } from '../../lib/router.js';
 import { MARKETS, PLATFORMS, RESOLUTIONS, FORMATS, fmt, lScore, lineFor, formatOf, factors } from '../../lib/score.js';
 import { resFromHeight } from '../../lib/lookup.js';
 import { PageHero } from './common.jsx';
+import { Journey, AfterVerify } from '../../components/Journey.jsx';
 
 // Every input carries where its value came from, so the creator can tell what the estimate rests on.
 const SOURCES = {
@@ -230,7 +231,7 @@ function Improve({ f, score, line, benchmarks, onApply }) {
     <section id="improve" className="gutter border-t border-line bg-paper py-10 sm:py-14">
       <div className="mx-auto flex max-w-[1240px] flex-col gap-6">
         <div className="flex max-w-2xl flex-col gap-2">
-          <span className="eyebrow">3 · Improve your L-Score</span>
+          <span className="eyebrow">3 · Learn · Improve your L-Score</span>
           <h2 className="display text-[30px] font-extrabold leading-tight sm:text-[38px]">Explore other choices before you post</h2>
           <p className="text-[15px] text-ink-2">Try a different duration or resolution and compare. The alternative is recalculated with the same method and the same inputs as your estimate. These are directions to explore, not guarantees: a change helps only if it still serves your content.</p>
         </div>
@@ -293,32 +294,19 @@ function Improve({ f, score, line, benchmarks, onApply }) {
 }
 
 function RoleOfL() {
-  const steps = [
-    { Icon: SlidersHorizontal, title: 'Understand and improve', body: 'The estimator shows which production choices drive impact, so you can decide before you post. It is open to everyone and awards nothing.' },
-    { Icon: ShieldCheck, title: 'Verify a published post', body: 'Submit the live post in Creator Studio. It is checked against the L line for its market and format before any decision.', mark: false },
-    { Icon: Sparkles, title: 'Recognition and discovery', body: 'Posts that qualify after verification carry the L Mark, with a public verification page, and appear where brands look for creators.', mark: true },
-  ];
   return (
     <section className="gutter py-10 sm:py-14">
       <div className="mx-auto flex max-w-[1240px] flex-col gap-6">
         <div className="flex max-w-2xl flex-col gap-2">
           <span className="eyebrow">What L does</span>
           <h2 className="display text-[30px] font-extrabold leading-tight sm:text-[38px]">An estimate is a starting point. The L Mark is earned.</h2>
+          <p className="text-[15px] text-ink-2">You are at Estimate and Learn. Once the post is live, submit it for verification. Posts that qualify are recognised and can be discovered by brands. Then estimate the next one.</p>
         </div>
-        <ol className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {steps.map(({ Icon, title, body, mark }, i) => (
-            <li key={title}>
-              <Card className="flex h-full flex-col gap-3 p-5">
-                <span className="flex items-center gap-3">
-                  <span className="font-mono text-[12px] text-mute">0{i + 1}</span>
-                  {mark ? <LMark size={28} /> : <Icon size={22} />}
-                </span>
-                <b className="text-[17px]">{title}</b>
-                <span className="text-[14px] text-ink-2">{body}</span>
-              </Card>
-            </li>
-          ))}
-        </ol>
+        <Journey current={['estimate', 'learn']} />
+        <div className="flex flex-col gap-3 pt-2">
+          <h3 className="text-[18px] font-bold">After verification, a qualifying post gets</h3>
+          <AfterVerify />
+        </div>
         <div className="flex flex-wrap gap-3">
           <Button variant="brand" as="a" href={href('studio-submit')}>Submit a published post <ArrowRight size={16} /></Button>
           <Button variant="outline" as="a" href={href('verified')}>See verified posts</Button>

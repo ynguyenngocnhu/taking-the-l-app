@@ -182,8 +182,8 @@ export function initialState() {
 
 // Incentives defined in the pitch deck for L Creators (10 qualifying posts in a quarter).
 export const L_CREATOR_INCENTIVES = [
-  { name: 'L-Media Fund', desc: "L'Oréal adds paid reach to qualifying campaign posts." },
-  { name: 'Lighter Rate', desc: '+2 points of commission on qualifying posts.' },
+  { name: 'L-Media Fund', desc: "Proposed for the pilot: L'Oréal adds paid reach to qualifying campaign posts. Not guaranteed." },
+  { name: 'Lighter Rate', desc: 'Proposed for the pilot: +2 points of commission on qualifying posts. Not guaranteed.' },
 ];
 
 // Platform-issued verification ID, e.g. LV-26Q4-7K3QX. Deterministic from the post.
