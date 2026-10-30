@@ -267,7 +267,7 @@ export function Receipt({ id }) {
       <div className="grid items-start gap-8 lg:grid-cols-[420px_1fr]">
         <article aria-label="Impact Receipt" className="relative mx-auto w-full max-w-[420px] overflow-hidden rounded-2xl border border-[#BDBDBD]/60 bg-ink text-paper shadow-[0_20px_40px_-24px_rgba(13,13,13,.5)]">
           <div className="flex items-center justify-between border-b border-dashed border-[#BDBDBD]/50 px-6 py-4 text-white">
-            <span className="flex items-center gap-2"><LBox size={26} /><b className="display text-[16px]">L Platform</b></span>
+            <LBox size={26} />
             <span className="font-mono text-[11px] uppercase tracking-widest text-white/60">Impact Receipt</span>
           </div>
           <div className="flex flex-col gap-5 p-6">

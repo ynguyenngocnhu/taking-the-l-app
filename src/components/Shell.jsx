@@ -16,9 +16,8 @@ export function TopBar({ area }) {
       <div className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[env(safe-area-inset-top,0px)] bg-ink" />
       <header className="gutter sticky top-[env(safe-area-inset-top,0px)] z-30 border-b border-white/10 bg-ink text-paper">
         <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between gap-3">
-          <a href={href('standard')} className="flex items-center gap-2.5" aria-label="L Platform home">
+          <a href={href('standard')} className="flex items-center gap-2.5" aria-label="Home">
             <LBox size={30} />
-            <span className="display hidden text-[17px] font-extrabold tracking-tight sm:inline">L Platform</span>
           </a>
           <nav aria-label="Switch experience" className="flex items-center gap-2">
             <span className="eyebrow hidden text-white/50 md:inline">Demo as</span>

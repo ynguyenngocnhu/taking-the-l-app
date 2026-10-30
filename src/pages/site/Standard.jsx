@@ -34,12 +34,12 @@ function Hero() {
       <div className="relative mx-auto flex max-w-[1180px] flex-col gap-8 pb-16 pt-14 sm:pb-24 sm:pt-20">
         <span className="eyebrow flex items-center gap-2 text-white/60"><LBox size={18} /> A creator sustainability initiative by L'Oréal</span>
         <h1 className="display-tight max-w-[820px] text-[56px] font-black uppercase leading-[0.88] tracking-[-0.01em] sm:text-[96px] lg:text-[124px]">
-          Taking the L.<br />
+          Taking<br />
+          the{' '}
           <span className="relative inline-block">
-            Redefining
+            L.
             <span aria-hidden="true" className="absolute -bottom-1 left-0 h-[10px] w-full bg-brand sm:h-[16px]" />
-          </span>{' '}
-          the win.
+          </span>
         </h1>
         <p className="max-w-[540px] text-[18px] leading-relaxed text-white/75 sm:text-[20px]">
           Taking the L is no longer about losing. It's about making every view count, with less digital impact.
@@ -298,7 +298,7 @@ export default function Standard() {
       <PublicBoard />
       <footer className="gutter border-t border-line py-10">
         <div className="mx-auto flex max-w-[1180px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="flex items-center gap-2.5"><LBox size={24} /><b className="display">L Platform</b><span className="text-[13px] text-mute">Prototype for the L'Oréal SAPMENA Limitless Pitch 2026</span></span>
+          <span className="flex items-center gap-2.5"><LBox size={24} /><span className="text-[13px] text-mute">Prototype for the L'Oréal SAPMENA Limitless Pitch 2026</span></span>
           <span className="text-[12px] text-mute">Illustrative demo. Not a real carbon calculation.</span>
         </div>
       </footer>

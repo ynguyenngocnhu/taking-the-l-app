@@ -8,6 +8,36 @@ import { ME, TODAY } from '../../data/mock.js';
 
 const STEPS = ['Type', 'Details', 'L-Score'];
 
+const SAMPLE_URL = 'https://tiktok.com/@alex.tran.makes/video/7431190040213';
+
+function platformFromUrl(url) {
+  const u = url.toLowerCase();
+  if (!/^https?:\/\//.test(u)) return null;
+  if (u.includes('tiktok.com')) return 'TikTok';
+  if (u.includes('instagram.com')) return 'Instagram';
+  if (u.includes('youtube.com') || u.includes('youtu.be')) return 'YouTube';
+  return null;
+}
+
+// Demo stand-in for the platform APIs: same link always returns the same details.
+function mockFetch(url) {
+  if (url === SAMPLE_URL) return { views: 125000, secs: 30, res: '1080p', title: 'Brow tutorial, the 30 s cut' };
+  const m = url.match(/\/video\/(\d{6,})|\/(?:reel|p)\/([\w-]{5,})|\/shorts\/([\w-]{5,})|[?&]v=([\w-]{5,})|youtu\.be\/([\w-]{5,})/i);
+  if (!m) return null;
+  let h = 7;
+  for (const ch of url) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return {
+    views: Math.round((12000 + (h % 380000)) / 100) * 100,
+    secs: [15, 20, 25, 30, 35, 45, 60][h % 7],
+    res: h % 5 === 0 ? '720p' : '1080p',
+    title: '',
+  };
+}
+
+function FromLink() {
+  return <span className="ml-1.5 rounded-full bg-brand-soft px-2 py-0.5 align-middle text-[11px] font-semibold text-brand-deep">From link</span>;
+}
+
 function Stepper({ step }) {
   return (
     <ol className="flex items-center gap-2" aria-label="Progress">
@@ -45,8 +75,30 @@ export default function Submit() {
   const set = (k) => (v) => setF((x) => ({ ...x, [k]: v && v.target ? v.target.value : v }));
   const campaigns = state.campaigns.filter((c) => c.status === 'Live');
 
+  const [lookup, setLookup] = useState({ status: 'idle' });
+
+  // Paste a link: detect the platform and pull views, duration and resolution from the post.
+  useEffect(() => {
+    if (type !== 'published') return;
+    const url = f.url.trim();
+    const plat = platformFromUrl(url);
+    if (!plat) { setLookup({ status: 'idle' }); return; }
+    setF((x) => (x.platform === plat ? x : { ...x, platform: plat }));
+    setLookup({ status: 'loading', platform: plat });
+    const t = setTimeout(() => {
+      const meta = mockFetch(url);
+      if (!meta) { setLookup({ status: 'error', platform: plat }); return; }
+      setF((x) => ({ ...x, views: String(meta.views), secs: meta.secs, res: meta.res, title: x.title || meta.title }));
+      setErrors((e) => ({ ...e, url: null, views: null, secs: null }));
+      setLookup({ status: 'done', platform: plat, meta });
+    }, 900);
+    return () => clearTimeout(t);
+  }, [f.url, type]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fromLink = (k) => lookup.status === 'done' && String(f[k]) === String(lookup.meta[k]);
+
   const fillSample = () => {
-    setF({ title: 'Brow tutorial, the 30 s cut', platform: 'TikTok', url: 'https://tiktok.com/@alex.tran.makes/video/7431190040213', campaignId: 'k2', market: me.market, secs: 30, res: '1080p', views: '125000' });
+    setF((x) => ({ ...x, title: '', platform: 'TikTok', url: SAMPLE_URL, campaignId: 'k2' }));
     setErrors({});
   };
 
@@ -155,6 +207,9 @@ export default function Submit() {
             {type === 'published' ? (
               <Field label="Video URL" htmlFor="f-url" error={errors.url}>
                 <input id="f-url" className={cx('input', errors.url && 'input-error')} inputMode="url" placeholder={`https://${PLATFORMS[f.platform].host}/…`} value={f.url} onChange={set('url')} />
+                {lookup.status === 'loading' && <span className="flex items-center gap-2 text-[13px] text-mute"><Spinner size={13} /> Reading the post from {lookup.platform}…</span>}
+                {lookup.status === 'done' && <span className="flex items-start gap-1.5 text-[13px] text-ink-2"><Check size={15} className="mt-[2px] shrink-0 text-brand-deep" /><span>Pulled from the post: <b className="font-mono">{Number(lookup.meta.views).toLocaleString('en-US')} views · {lookup.meta.secs} s · {lookup.meta.res}</b>. You can still edit them.</span></span>}
+                {lookup.status === 'error' && <span className="text-[13px] text-warn">Couldn't read a post from this link. Check it's a public post link, or enter views and duration by hand.</span>}
               </Field>
             ) : (
               <Field label="Upload video" error={errors.file} hint="Read in your browser to fill duration and resolution. Nothing is uploaded in this demo.">
@@ -186,7 +241,7 @@ export default function Submit() {
               </Field>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Video duration (seconds)" htmlFor="f-secs" error={errors.secs}>
+              <Field label={<>Video duration (seconds){fromLink('secs') && <FromLink />}</>} htmlFor="f-secs" error={errors.secs}>
                 <div className="flex flex-col gap-2">
                   <input id="f-secs" type="number" min="1" max="600" className={cx('input font-mono', errors.secs && 'input-error')} value={f.secs} onChange={set('secs')} />
                   <div className="flex gap-1.5">
@@ -196,21 +251,21 @@ export default function Submit() {
                   </div>
                 </div>
               </Field>
-              <Field label="Resolution">
+              <Field label={<>Resolution{fromLink('res') && <FromLink />}</>}>
                 <Seg label="Resolution" options={Object.keys(RESOLUTIONS)} value={f.res} onChange={set('res')} />
               </Field>
             </div>
             {type === 'published' && (
-              <Field label="Views" htmlFor="f-views" error={errors.views} hint="Current view count shown on the post.">
+              <Field label={<>Views{fromLink('views') && <FromLink />}</>} htmlFor="f-views" error={errors.views} hint={type === 'published' ? 'Filled in from the link. Edit it if the post has grown since.' : undefined}>
                 <input id="f-views" inputMode="numeric" className={cx('input font-mono', errors.views && 'input-error')} placeholder="125000" value={f.views} onChange={set('views')} />
               </Field>
             )}
           </Card>
           <div className="flex justify-between gap-2">
             <Button variant="ghost" onClick={() => setStep(0)}><ArrowLeft size={16} /> Back</Button>
-            <Button type="submit">Calculate L-Score <ArrowRight size={16} /></Button>
+            <Button type="submit" disabled={lookup.status === 'loading'}>Calculate L-Score <ArrowRight size={16} /></Button>
           </div>
-          <DemoNote>The L-Score here uses a fixed demo formula. It is illustrative, not a real carbon calculation.</DemoNote>
+          <DemoNote>{type === 'published' ? 'In the live product, views, duration and resolution come from the platform once the creator connects their account. Here the lookup is simulated. ' : ''}The L-Score uses a fixed demo formula. It is illustrative, not a real carbon calculation.</DemoNote>
         </form>
       )}
 
