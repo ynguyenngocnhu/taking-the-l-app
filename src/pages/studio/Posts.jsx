@@ -69,7 +69,7 @@ export function PostDetail({ id }) {
         <Card className={cx('flex flex-col gap-6 overflow-hidden p-6 sm:p-8', earned && 'border-gold')}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
-              {earned ? <LMark size={18} text="L Earned" className="self-start" /> : (
+              {earned ? <LMark size={30} className="self-start" /> : (
                 <span className={cx('inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider', p.status === 'draft' ? 'border border-dashed border-ink/40 text-ink' : 'bg-paper text-ink')}>{h.tag}</span>
               )}
               <span className="eyebrow mt-4">L-Score</span>

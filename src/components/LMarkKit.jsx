@@ -40,63 +40,36 @@ function spaced(ctx, px) {
 
 // Compact badge (tile + "L EARNED") anchored at top-right corner (rx, y).
 function badge(ctx, rx, y, s) {
-  ctx.font = `700 ${Math.round(s * 0.42)}px "JetBrains Mono", monospace`;
-  spaced(ctx, s * 0.06);
-  const label = 'L EARNED';
-  const tw = ctx.measureText(label).width;
   const pad = s * 0.16;
-  const w = pad + s + s * 0.3 + tw + s * 0.45;
-  const h = s + pad * 2;
+  const w = s + pad * 2;
   const x = rx - w;
   ctx.fillStyle = 'rgba(0,0,0,0.9)';
-  roundRect(ctx, x, y, w, h, s * 0.26);
+  roundRect(ctx, x, y, w, w, s * 0.26);
   ctx.fill();
   ctx.strokeStyle = GOLD;
   ctx.lineWidth = Math.max(2, s * 0.05);
   ctx.stroke();
   tile(ctx, x + pad, y + pad, s);
-  ctx.fillStyle = GOLD_TEXT;
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, x + pad + s + s * 0.3, y + h / 2 + 1);
-  spaced(ctx, 0);
-  return { w, h };
 }
 
 export function drawLMark(variant, p) {
   const c = document.createElement('canvas');
   const ctx = c.getContext('2d');
   if (variant === 'sticker') {
+    // The L Mark alone: gold L tile in a black frame with a gold ring.
     c.width = 800; c.height = 800;
     ctx.fillStyle = BLACK;
-    roundRect(ctx, 40, 40, 720, 720, 72);
+    roundRect(ctx, 80, 80, 640, 640, 110);
     ctx.fill();
     ctx.strokeStyle = GOLD;
-    ctx.lineWidth = 6;
-    roundRect(ctx, 64, 64, 672, 672, 52);
+    ctx.lineWidth = 10;
+    roundRect(ctx, 80, 80, 640, 640, 110);
     ctx.stroke();
-    tile(ctx, 300, 120, 200);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = GOLD_TEXT;
-    ctx.font = '700 54px "JetBrains Mono", monospace';
-    spaced(ctx, 12);
-    ctx.fillText('L EARNED', 406, 410);
-    spaced(ctx, 0);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 112px Archivo, sans-serif';
-    ctx.fillText(fmt(p.score), 400, 540);
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.font = '500 30px "JetBrains Mono", monospace';
-    ctx.fillText(`g CO₂e / 1k views · line ${fmt(p.line)}`, 400, 590);
-    ctx.fillStyle = GOLD_TEXT;
-    ctx.font = '600 24px "JetBrains Mono", monospace';
-    spaced(ctx, 4);
-    ctx.fillText(`TAKING THE L · VERIFIED ${p.verified || ''}`.trim(), 404, 680);
-    spaced(ctx, 0);
+    tile(ctx, 170, 170, 460);
   } else {
     // Transparent 9:16 frame: badge top-right, score chip lower-left. Drop it on top of the video in an editor.
     c.width = 1080; c.height = 1920;
-    badge(ctx, 1080 - 64, 210, 96);
+    badge(ctx, 1080 - 64, 200, 120);
     const chip = `${fmt(p.score)} g CO₂e / 1k views · under the ${fmt(p.line)} L line`;
     ctx.font = '600 34px "JetBrains Mono", monospace';
     const w = ctx.measureText(chip).width + 64;
@@ -185,7 +158,7 @@ export function LMarkModal({ open, onClose, p }) {
           <div className="flex flex-col gap-3 text-[14px]">
             <p className="text-ink-2">
               {variant === 'sticker'
-                ? 'A transparent PNG sticker. Add it to a story, a carousel slide or your bio highlight.'
+                ? 'The L Mark as a transparent PNG sticker. Add it to a story, a carousel slide or your bio highlight.'
                 : 'A transparent 1080×1920 PNG. Lay it over your video in CapCut or any editor before you post. The video underneath is only a preview.'}
             </p>
             <p className="text-mute">The L Mark is yours to share. It is not added to TikTok, Instagram or YouTube automatically.</p>
