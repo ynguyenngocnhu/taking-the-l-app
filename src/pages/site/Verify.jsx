@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowUpRight, ShieldCheck, ShieldAlert, ArrowLeft } from 'lucide-react';
 import { Avatar, Button, Card, LMark, ScoreBar, StatusPill, Thumb, cx } from '../../components/ui.jsx';
-import { Receipts, CampaignTag, contextLabel } from '../../components/PostBits.jsx';
+import { ImpactReceipt, CampaignTag, contextLabel } from '../../components/PostBits.jsx';
 import { useStore, enrich, campaignLabel } from '../../lib/store.jsx';
 import { href } from '../../lib/router.js';
 import { MARKETS, FORMATS, fmt, compact } from '../../lib/score.js';
@@ -95,8 +95,8 @@ export default function Verify({ id }) {
               </dl>
             </Card>
             <div className="flex flex-col gap-3">
-              <h2 className="text-[18px] font-bold">Impact receipts</h2>
-              <Receipts p={p} benchmarks={state.benchmarks} />
+              <h2 className="text-[18px] font-bold">Impact receipt</h2>
+              <ImpactReceipt p={p} benchmarks={state.benchmarks} />
             </div>
             <Card className="flex items-start gap-3 bg-paper p-5 text-[14px]">
               <ShieldCheck size={20} className="mt-0.5 shrink-0" />

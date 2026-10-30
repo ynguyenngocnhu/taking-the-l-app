@@ -46,7 +46,7 @@ export const CAMPAIGNS = [
     description: 'Re-cut one of your 60-second tutorials into a 30-second version. Same steps, same story, half the seconds.',
     objective: 'Show that a shorter cut keeps the story and the results.',
     requirements: ['Start from a tutorial you already published', 'Keep the hook and the result shot', 'The new cut is half the length or less'],
-    deliverables: ['1 short cut posted on the same account', 'Submit the short cut and the long cut length'],
+    deliverables: ['1 shorter version posted on the same account', 'Submit the published post link in Creator Studio'],
     hashtags: ['#TheInvisibleEdit', '#TakingTheL'], mentions: ['@lorealparis'],
     eligibility: ['A published tutorial of 45 seconds or more', 'Creator Studio profile in an eligible market'],
     reward: '$500 campaign fee', start: '2026-10-10', end: '2026-12-15', deadline: '2026-12-22',
@@ -76,12 +76,12 @@ export const CAMPAIGNS = [
 ];
 
 const ALEX_POSTS = [
-  { id: 'p101', title: '30-second morning glow routine', platform: 'TikTok', secs: 30, longSecs: 58, res: '1080p', views: 125000, status: 'qualified', submitted: '2026-10-04', verified: '2026-10-06', campaignId: 'k1', thumb: 0 },
+  { id: 'p101', title: '30-second morning glow routine', platform: 'TikTok', secs: 30, res: '1080p', views: 125000, status: 'qualified', submitted: '2026-10-04', verified: '2026-10-06', campaignId: 'k1', thumb: 0 },
   { id: 'p102', title: 'Lash lift in 25 seconds', platform: 'TikTok', secs: 25, res: '720p', views: 88400, status: 'qualified', submitted: '2026-10-08', verified: '2026-10-09', campaignId: 'k3', thumb: 3 },
-  { id: 'p103', title: 'SPF the right way (short cut)', platform: 'TikTok', secs: 35, longSecs: 72, res: '1080p', views: 64200, status: 'qualified', submitted: '2026-10-11', verified: '2026-10-13', campaignId: null, thumb: 1 },
+  { id: 'p103', title: 'SPF the right way', platform: 'TikTok', secs: 35, res: '1080p', views: 64200, status: 'qualified', submitted: '2026-10-11', verified: '2026-10-13', campaignId: null, thumb: 1 },
   { id: 'p104', title: 'Night routine, no fluff', platform: 'Instagram', secs: 32, res: '1080p', views: 41800, status: 'qualified', submitted: '2026-10-15', verified: '2026-10-16', campaignId: null, thumb: 4 },
   { id: 'p105', title: 'Full GRWM for a wedding', platform: 'TikTok', secs: 75, res: '1080p', views: 152000, status: 'not', submitted: '2026-10-17', verified: '2026-10-18', campaignId: null, thumb: 2 },
-  { id: 'p106', title: 'Brow tutorial: the 30 s cut', platform: 'TikTok', secs: 30, longSecs: 60, res: '1080p', views: 210500, status: 'qualified', submitted: '2026-10-19', verified: '2026-10-20', campaignId: 'k2', thumb: 5 },
+  { id: 'p106', title: 'Brow tutorial: the 30 s cut', platform: 'TikTok', secs: 30, res: '1080p', views: 210500, status: 'qualified', submitted: '2026-10-19', verified: '2026-10-20', campaignId: 'k2', thumb: 5 },
   { id: 'p107', title: 'Dewy base in three steps', platform: 'TikTok', secs: 28, res: '1080p', views: 47900, status: 'qualified', submitted: '2026-10-23', verified: '2026-10-24', campaignId: null, thumb: 6 },
   { id: 'p108', title: 'Hair oil in 20 seconds', platform: 'TikTok', secs: 20, res: '1080p', views: 31200, status: 'review', submitted: '2026-10-27', verified: null, campaignId: 'k1', thumb: 7 },
   { id: 'p109', title: 'Lip combo, one product', platform: 'Instagram', secs: 26, res: '1080p', views: 22800, status: 'info', submitted: '2026-10-28', verified: null, campaignId: null, thumb: 1, notes: [{ by: 'Verification team', date: '2026-10-29', text: 'The link opens a private post. Make it public or send a new link.' }] },
@@ -144,7 +144,7 @@ function generate() {
       const views = Math.round((8000 + r() ** 2 * 380000) / 100) * 100;
       const campaignId = c.campaigns.length && r() < 0.65 && submitted >= '2026-10-01' ? c.campaigns[Math.floor(r() * c.campaigns.length)] : null;
       const post = { id: `p${id++}`, creatorId: c.id, title: TITLES[Math.floor(r() * TITLES.length)], platform, secs, res, market: c.market, views, submitted, campaignId, thumb: Math.floor(r() * 8), notes: [] };
-      if (short && r() < 0.5) post.longSecs = secs * 2;
+      if (short) r(); // keeps the seeded sample data identical to earlier versions
       post.url = urlFor(platform, c.handle.slice(1), post.id);
       const score = lScore(post);
       const line = lineFor(benchmarks, post.market, secs);

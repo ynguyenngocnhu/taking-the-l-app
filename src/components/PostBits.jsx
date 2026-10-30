@@ -70,42 +70,30 @@ export function useVerifiedPosts() {
     .sort((a, b) => (b.verified || '').localeCompare(a.verified || '') || a.id.localeCompare(b.id));
 }
 
-// The deck's Impact Receipt. A qualifying post has two: the short cut (the post) and the long cut it replaced.
-function receiptRows(p, secs, benchmarks, kind, other) {
-  const post = { ...p, secs };
-  const score = lScore(post);
-  const line = lineFor(benchmarks, p.market, secs);
-  const mb = (secs * RESOLUTIONS[p.res].mbps) / 8;
+// The deck's Impact Receipt: one per post.
+export function ImpactReceipt({ p, benchmarks }) {
+  const score = lScore(p);
+  const line = lineFor(benchmarks, p.market, p.secs);
+  const mb = (p.secs * RESOLUTIONS[p.res].mbps) / 8;
   const under = score <= line;
-  let claim = '–';
-  if (kind === 'short' && other) claim = `lighter by ${Math.round((1 - secs / other) * 100)}%`;
-  if (kind === 'long' && other) claim = `the long cut, ${secs} s`;
-  return { score, line, mb, under, claim, format: FORMATS[formatOf(secs)].name.toLowerCase() };
-}
-
-export function ImpactReceipt({ p, kind = 'short', benchmarks }) {
-  const secs = kind === 'long' ? p.longSecs : p.secs;
-  const r = receiptRows(p, secs, benchmarks, kind, kind === 'long' ? p.secs : p.longSecs);
-  const result = kind === 'short' ? (p.status === 'qualified' ? 'L earned' : p.status === 'not' ? 'over the L line' : 'not verified yet') : r.under ? 'under the L line' : 'over the L line';
+  const result = p.status === 'qualified' ? 'L earned' : p.status === 'not' ? 'over the L line' : 'not verified yet';
+  const claim = under ? `${Math.round((1 - score / line) * 100)}% under the L line` : "–";
   return (
     <article className="flex w-full max-w-[340px] flex-col gap-0 rounded-xl border border-[#BDBDBD] bg-ink p-5 font-mono text-[13px] text-white">
-      <div className="flex items-center justify-between">
-        <span className="font-semibold uppercase tracking-[0.08em]">Impact receipt</span>
-        <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-white/70">{kind === 'long' ? 'Long cut' : p.longSecs ? 'Short cut' : 'Post'}</span>
-      </div>
+      <span className="font-semibold uppercase tracking-[0.08em]">Impact receipt</span>
       <Dash />
-      <Row k="seconds" v={secs} />
-      <Row k="MB per view" v={r.mb.toFixed(1)} />
-      <Row k="g CO2e / 1,000" v={fmt(r.score)} />
-      <Row k="L line" v={`${fmt(r.line)} · ${MARKETS[p.market].name}, ${r.format}`} />
+      <Row k="seconds" v={p.secs} />
+      <Row k="MB per view" v={mb.toFixed(1)} />
+      <Row k="g CO2e / 1,000" v={fmt(score)} />
+      <Row k="L line" v={`${fmt(line)} · ${MARKETS[p.market].name}, ${FORMATS[formatOf(p.secs)].name.toLowerCase()}`} />
       <Dash />
-      <Row k="views per 1 GB" v={Math.floor(1000 / r.mb)} />
+      <Row k="views per 1 GB" v={Math.floor(1000 / mb)} />
       <Row k="result" v={result} red={result === 'L earned'} />
       <Row k="method" v="loreal.com/L" />
-      <Row k="claim" v={r.claim} />
+      <Row k="claim" v={claim} />
       <Dash />
       <Row k="share" v="post to feed" />
-      {kind === 'short' && p.vid && <span className="mt-2 text-[10px] text-white/45">Verification {p.vid}</span>}
+      {p.vid && <span className="mt-2 text-[10px] text-white/45">Verification {p.vid}</span>}
     </article>
   );
 }
@@ -121,18 +109,6 @@ function Row({ k, v, red }) {
 
 function Dash() {
   return <div className="my-2 border-t border-dashed border-white/35" />;
-}
-
-export function Receipts({ p, benchmarks }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-4">
-        {p.longSecs ? <ImpactReceipt p={p} kind="long" benchmarks={benchmarks} /> : null}
-        <ImpactReceipt p={p} kind="short" benchmarks={benchmarks} />
-      </div>
-      {!p.longSecs && <p className="text-[13px] text-mute">No long cut was submitted with this post, so it has one receipt.</p>}
-    </div>
-  );
 }
 
 export function verifyUrl(vid) {

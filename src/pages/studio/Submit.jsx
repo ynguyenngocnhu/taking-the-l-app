@@ -42,7 +42,7 @@ export default function Submit({ preset }) {
   const presetOk = joined.some((c) => c.id === preset);
 
   const [step, setStep] = useState(0);
-  const [f, setF] = useState({ platform: accounts[0].platform, url: '', campaignId: presetOk ? preset : '', title: '', market: me.market, secs: 30, res: '1080p', views: '', longSecs: '' });
+  const [f, setF] = useState({ platform: accounts[0].platform, url: '', campaignId: presetOk ? preset : '', title: '', market: me.market, secs: 30, res: '1080p', views: '' });
   const [lookup, setLookup] = useState({ status: 'idle' });
   const [err, setErr] = useState({});
   const set = (k) => (v) => setF((x) => ({ ...x, [k]: v && v.target ? v.target.value : v }));
@@ -71,7 +71,6 @@ export default function Submit({ preset }) {
       if (!f.title.trim()) er.title = 'Add a short title';
       if (!(Number(f.secs) > 0)) er.secs = 'Add the duration';
       if (!(Number(f.views) >= 0) || f.views === '') er.views = 'Add the view count';
-      if (f.longSecs && !(Number(f.longSecs) > Number(f.secs))) er.longSecs = 'The long cut must be longer than this post';
     }
     setErr(er);
     if (!Object.keys(er).length) setStep(step + 1);
@@ -88,7 +87,7 @@ export default function Submit({ preset }) {
       type: 'submit',
       post: {
         id, creatorId: me.id, title: f.title.trim(), platform: f.platform, url: f.url, secs: post.secs, res: f.res, market: f.market,
-        views: Number(f.views), longSecs: f.longSecs ? Number(f.longSecs) : undefined, campaignId: f.campaignId || null,
+        views: Number(f.views), campaignId: f.campaignId || null,
         status: 'review', submitted: TODAY, verified: null, thumb: Math.floor(Math.random() * 8), notes: [],
       },
     });
@@ -165,9 +164,6 @@ export default function Submit({ preset }) {
               <Field label="Views today" htmlFor="s-views" error={err.views}><input id="s-views" type="number" min="0" className="input font-mono" value={f.views} onChange={set('views')} /></Field>
               <Field label="Main market" htmlFor="s-market"><select id="s-market" className="input" value={f.market} onChange={set('market')}>{Object.entries(MARKETS).map(([k, m]) => <option key={k} value={k}>{m.name}</option>)}</select></Field>
             </div>
-            <Field label="Long cut length (optional)" htmlFor="s-long" error={err.longSecs} hint="If this post is a shorter cut of a longer video, add the long cut’s length. The post then gets two impact receipts: the long cut and the short cut.">
-              <input id="s-long" type="number" min="1" className="input w-40 font-mono" value={f.longSecs} onChange={set('longSecs')} placeholder="seconds" />
-            </Field>
           </div>
         )}
 
@@ -175,7 +171,7 @@ export default function Submit({ preset }) {
           <div className="flex flex-col gap-4">
             <h2 className="text-[18px] font-bold">Ready to submit</h2>
             <dl className="grid gap-x-6 gap-y-2 text-[14px] sm:grid-cols-2">
-              {[['Title', f.title], ['Platform', `${f.platform} · ${account?.handle}`], ['Campaign', campaignName], ['Market', MARKETS[f.market].name], ['Inputs', `${post.secs} s · ${f.res} · ${fmt(Number(f.views))} views`], ['Long cut', f.longSecs ? `${f.longSecs} s` : 'None']].map(([k, v]) => (
+              {[['Title', f.title], ['Platform', `${f.platform} · ${account?.handle}`], ['Campaign', campaignName], ['Market', MARKETS[f.market].name], ['Inputs', `${post.secs} s · ${f.res} · ${fmt(Number(f.views))} views`]].map(([k, v]) => (
                 <div key={k} className="flex flex-col border-t border-line pt-2"><dt className="text-[12px] text-mute">{k}</dt><dd className="break-words font-semibold">{v}</dd></div>
               ))}
               <div className="flex flex-col border-t border-line pt-2 sm:col-span-2"><dt className="text-[12px] text-mute">Link</dt><dd className="break-all font-mono text-[12px]">{f.url}</dd></div>

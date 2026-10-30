@@ -163,7 +163,6 @@ export function Verification({ id }) {
             <Row k="Data per view">{mb.toFixed(1)} MB</Row>
             <Row k="Energy per GB">{ENERGY_KWH_PER_GB} kWh (Impact+)</Row>
             <Row k="Grid factor">{MARKETS[p.market].name} · {MARKETS[p.market].grid} g/kWh (Ember)</Row>
-            {p.longSecs && <Row k="Long cut">{p.longSecs} s</Row>}
           </Card>
 
           {p.notes.length > 0 && (

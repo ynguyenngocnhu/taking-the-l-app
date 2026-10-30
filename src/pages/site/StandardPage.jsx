@@ -51,7 +51,7 @@ function Example() {
         <h3 className="text-[20px] font-bold">The same tutorial, cut from 60 to 30 seconds</h3>
         <p className="text-[14px] text-mute">1080p, TikTok, watched in Vietnam. Same story, half the seconds, half the weight per view.</p>
       </div>
-      {[['Long cut · 60 s', long], ['Short cut · 30 s', short]].map(([l, v]) => (
+      {[['60 s version', long], ['30 s version', short]].map(([l, v]) => (
         <div key={l} className="flex flex-col gap-1.5">
           <div className="flex justify-between text-[14px]"><span>{l}</span><b className="font-mono tnum">{fmt(v)} g</b></div>
           <div className="h-3 rounded-full bg-ink/[0.08]"><div className={cx('h-3 rounded-full', v === short ? 'bg-ink' : 'bg-line-strong')} style={{ width: `${(v / max) * 100}%` }} /></div>

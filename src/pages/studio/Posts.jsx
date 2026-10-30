@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowUpRight, ShieldCheck, Share2, Upload, Scissors, AlertTriangle, Clock, Send } from 'lucide-react';
 import { Button, Card, Empty, Field, LMark, PageHead, ScoreBar, Seg, StatusPill, Thumb, DemoNote, cx } from '../../components/ui.jsx';
-import { CampaignTag, Receipts, ShareCardModal, contextLabel } from '../../components/PostBits.jsx';
+import { CampaignTag, ImpactReceipt, ShareCardModal, contextLabel } from '../../components/PostBits.jsx';
 import { useStore, useMe, enrich, campaignLabel } from '../../lib/store.jsx';
 import { href } from '../../lib/router.js';
 import { fmt, compact, MARKETS, FORMATS, lScore, lineFor } from '../../lib/score.js';
@@ -231,7 +231,7 @@ export function PostDetail({ id }) {
               <Detail k="Campaign">{campaign}</Detail>
               <Detail k="Market and format">{MARKETS[p.market].name} · {FORMATS[p.format].name}</Detail>
               <Detail k="L line">{fmt(p.line)} g · {state.benchmarkPeriod.label}</Detail>
-              <Detail k="Inputs">{p.secs} s · {p.res} · {compact(p.views)} views{p.longSecs ? ` · long cut ${p.longSecs} s` : ''}</Detail>
+              <Detail k="Inputs">{p.secs} s · {p.res} · {compact(p.views)} views</Detail>
               <Detail k="Submitted">{p.submitted}</Detail>
               <Detail k="Verified">{p.verified || 'Not yet'}</Detail>
               {p.vid && <Detail k="Verification ID"><a href={href(`verify-${p.vid}`)} className="font-mono underline">{p.vid}</a></Detail>}
@@ -240,8 +240,8 @@ export function PostDetail({ id }) {
 
           {(q || p.status === 'not') && (
             <section className="flex flex-col gap-3">
-              <h2 className="text-[18px] font-bold">Impact receipts</h2>
-              <Receipts p={p} benchmarks={state.benchmarks} />
+              <h2 className="text-[18px] font-bold">Impact receipt</h2>
+              <ImpactReceipt p={p} benchmarks={state.benchmarks} />
             </section>
           )}
 

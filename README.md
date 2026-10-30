@@ -4,7 +4,7 @@ Prototype for the L'Oréal SAPMENA × WPP Limitless Pitch 2026 ("Taking the L").
 Three connected areas:
 
 - **Public L website** (no login): Home, The L Standard (methodology), L-Score Estimator (estimate only, never the L Mark), Verified Posts gallery with filters, a public verification page per post (`#verify-LV-26Q4-XXXXX`), For Brands, Join L (LOREALISTAR markets vs interest registration).
-- **Creator Studio** (`#studio`, demo sign-in): profile and onboarding, dashboard with progress to 10 qualifying posts a quarter, My Posts, post detail with the L Mark only for verified qualifying posts and the two impact receipts (long cut, short cut), submit flow (platform, link, campaign or Organic L Post, details, submit), campaigns and briefs.
+- **Creator Studio** (`#studio`, demo sign-in): profile and onboarding, dashboard with progress to 10 qualifying posts a quarter, My Posts, post detail with the L Mark only for verified qualifying posts and its impact receipt, submit flow (platform, link, campaign or Organic L Post, details, submit), campaigns and briefs.
 - **Admin Console** (`#admin`, linked from the footer only): overview, submissions, verification (approve, reject, request information), campaigns, benchmarks (quarterly L lines), creators.
 
 L-Score is always per post, never per creator. All data is sample data and the L-Score is an illustrative formula, not a validated carbon calculation.
