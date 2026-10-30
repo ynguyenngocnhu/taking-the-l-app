@@ -54,7 +54,7 @@ export default function Review() {
                 const on = p.id === current.id;
                 return (
                   <button key={p.id} type="button" onClick={() => { setSel(p.id); setNote(''); }} aria-pressed={on} className={cx('flex w-[240px] shrink-0 items-center gap-3 rounded-xl p-3 text-left xl:w-auto xl:rounded-none xl:border-b xl:border-line', on ? 'bg-ink text-white' : 'hover:bg-paper')}>
-                    <Thumb index={p.thumb} secs={p.secs} className="h-12 w-[34px]" />
+                    <Thumb index={p.thumb} secs={p.secs} status={p.status} className="h-12 w-[34px]" />
                     <span className="flex min-w-0 flex-col">
                       <b className="truncate text-[14px]">{p.title}</b>
                       <span className={cx('truncate text-[12px]', on ? 'text-white/60' : 'text-mute')}>{c.name} · {p.submitted}</span>
@@ -68,7 +68,7 @@ export default function Review() {
 
           <Card className="flex min-w-0 flex-col gap-6 p-5 sm:p-6">
             <div className="flex items-start gap-4">
-              <Thumb index={current.thumb} secs={current.secs} className="h-[100px] w-[70px]" label={current.title} />
+              <Thumb index={current.thumb} secs={current.secs} status={current.status} mark="sm" className="h-[100px] w-[70px]" label={current.title} />
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <h2 className="display text-[22px] font-extrabold leading-tight">{current.title}</h2>
                 <a href={href(`admin-creator-${creator.id}`)} className="flex flex-wrap items-center gap-x-2 text-[14px] hover:underline"><Avatar name={creator.name} size={22} /><b>{creator.name}</b><span className="text-mute">{creator.handle}</span></a>

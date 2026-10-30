@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowRight, ArrowDown, Ruler, Scissors, Award, ChevronDown, Clock, MonitorPlay, Eye, Gauge, Zap, Factory } from 'lucide-react';
-import { Button, Card, StatusPill, ScoreBar, LGlyph, LBox, LProgress, DemoNote, Avatar, cx } from '../../components/ui.jsx';
+import { Button, Card, StatusPill, ScoreBar, LGlyph, LBox, LMark, LProgress, DemoNote, Avatar, Thumb, cx } from '../../components/ui.jsx';
 import { href } from '../../lib/router.js';
-import { useStore, leaderboard } from '../../lib/store.jsx';
-import { MARKETS, RESOLUTIONS, PLATFORMS, ENERGY_KWH_PER_GB, fmt } from '../../lib/score.js';
+import { useStore, leaderboard, enrich } from '../../lib/store.jsx';
+import { MARKETS, RESOLUTIONS, PLATFORMS, ENERGY_KWH_PER_GB, fmt, compact } from '../../lib/score.js';
 import { QUARTER } from '../../data/mock.js';
 
 const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -249,8 +249,31 @@ function Programme() {
 function PublicBoard() {
   const { state } = useStore();
   const rows = leaderboard(state).slice(0, 6);
+  const recent = state.posts
+    .filter((p) => p.type !== 'draft' && p.submitted >= QUARTER.start)
+    .map((p) => enrich(p, state.benchmarks))
+    .sort((a, b) => b.submitted.localeCompare(a.submitted) || a.id.localeCompare(b.id))
+    .slice(0, 12);
   return (
     <Section id="impact" eyebrow={`Public impact · ${QUARTER.label}`} title="The lightest creators this quarter." className="bg-paper" intro="Ranked by qualifying L posts this quarter, then by how far under the L line they land on average.">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="text-[17px] font-bold">Latest posts this quarter</h3>
+          <span className="flex items-center gap-1.5 text-[12px] text-mute"><LMark size={12} label={false} /> = earned an L</span>
+        </div>
+        <ul className="scroll-x -mx-1 flex gap-3 px-1 pb-1">
+          {recent.map((p) => {
+            const c = state.creators.find((x) => x.id === p.creatorId);
+            return (
+              <li key={p.id} className="w-[132px] shrink-0 sm:w-[150px]">
+                <Thumb index={p.thumb} secs={p.secs} status={p.status === 'qualified' ? 'qualified' : null} mark="md" play={false} className={cx('aspect-[9/16] w-full rounded-xl', p.status === 'qualified' && 'ring-2 ring-gold')} label={`${p.title} by ${c.name}`} />
+                <span className="mt-1.5 block truncate text-[13px] font-semibold">{c.name}</span>
+                <span className="block font-mono text-[11px] text-mute">{compact(p.views)} views · {fmt(p.score)}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
       <Card className="overflow-hidden">
         <div className="scroll-x">
           <table className="w-full min-w-[620px] text-[14px] tnum">

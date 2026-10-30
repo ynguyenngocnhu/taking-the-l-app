@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Receipt as ReceiptIcon, Share2, Download, Copy, Check, ArrowRight, ShieldCheck, ExternalLink } from 'lucide-react';
-import { Button, Card, StatusPill, Thumb, ScoreBar, Empty, DemoNote, Modal, Seg, LGlyph, LBox, Spinner, cx } from '../../components/ui.jsx';
+import { Button, Card, StatusPill, Thumb, ScoreBar, Empty, DemoNote, Modal, Seg, LGlyph, LBox, LMark, PendingTag, Spinner, cx } from '../../components/ui.jsx';
+import { LMarkModal } from '../../components/LMarkKit.jsx';
 import { useStore, enrich } from '../../lib/store.jsx';
 import { href, go } from '../../lib/router.js';
 import { fmt, compact, factors, MARKETS, FORMATS, lScore, RESOLUTIONS } from '../../lib/score.js';
@@ -44,31 +45,38 @@ export function PostDetail({ id }) {
   const campaign = p.campaignId && state.campaigns.find((c) => c.id === p.campaignId);
   const canReceipt = p.status !== 'draft' && p.status !== 'rejected' && p.under;
   const opts = lighterOptions(p);
+  const earned = p.status === 'qualified';
   return (
     <div className="flex flex-col gap-6">
       <a href={href('studio-posts')} className="inline-flex items-center gap-1.5 self-start text-[14px] font-semibold text-mute hover:text-ink"><ArrowLeft size={16} /> My posts</a>
-      <div className="flex items-start gap-4">
-        <Thumb index={p.thumb} secs={p.secs} className="h-[86px] w-[60px]" label={p.title} />
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <h1 className="display text-[24px] font-extrabold leading-tight sm:text-[30px]">{p.title}</h1>
-          <span className="text-[14px] text-mute">{p.platform} · {MARKETS[p.market].name} · submitted {p.submitted}{campaign ? ` · ${campaign.name}` : ''}</span>
-          <span><StatusPill status={p.status} /></span>
-        </div>
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <h1 className="display text-[26px] font-extrabold leading-tight sm:text-[32px]">{p.title}</h1>
+        <span className="text-[14px] text-mute">{p.platform} · {MARKETS[p.market].name} · submitted {p.submitted}{campaign ? ` · ${campaign.name}` : ''}</span>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-        <Card className={cx('flex flex-col gap-6 overflow-hidden p-6 sm:p-8', p.status === 'qualified' && 'border-ink')}>
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(240px,300px)_1fr]">
+        <div className="mx-auto flex w-full max-w-[300px] flex-col gap-3">
+          <div className="relative">
+            <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="lg" className={cx('aspect-[9/16] w-full rounded-2xl', earned && 'ring-2 ring-gold ring-offset-2')} label={p.title} />
+            {p.status === 'draft' && <span className="absolute left-3 top-3 rounded-md border border-dashed border-white/80 bg-ink/60 px-2 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-white">Draft estimate</span>}
+            {p.type !== 'draft' && <span className="absolute bottom-3 left-3 rounded bg-ink/75 px-1.5 py-0.5 font-mono text-[12px] text-white tnum">{compact(p.views)} views</span>}
+          </div>
+          <p className="text-center text-[13px] text-mute">
+            {earned ? 'This post carries the L Mark.' : p.status === 'review' ? 'The L Mark appears here once the post is verified.' : p.status === 'draft' ? 'Drafts can show their L-Potential, never the L Mark.' : 'No L Mark on this post.'}
+          </p>
+        </div>
+
+        <Card className={cx('flex flex-col gap-6 overflow-hidden p-6 sm:p-8', earned && 'border-gold')}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
-              <span className={cx('inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider', p.status === 'qualified' ? 'bg-gold text-ink' : p.status === 'draft' ? 'border border-dashed border-ink/40 text-ink' : 'bg-paper text-ink')}>
-                {p.status === 'qualified' && <LGlyph size={13} />}{h.tag}
-              </span>
-              <span className="mt-3 flex items-baseline gap-2">
-                <span className="display text-[72px] font-black leading-[0.9] tnum sm:text-[88px]">{fmt(p.score)}</span>
-              </span>
+              {earned ? <LMark size={18} text="L Earned" className="self-start" /> : (
+                <span className={cx('inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider', p.status === 'draft' ? 'border border-dashed border-ink/40 text-ink' : 'bg-paper text-ink')}>{h.tag}</span>
+              )}
+              <span className="eyebrow mt-4">L-Score</span>
+              <span className="display text-[72px] font-black leading-[0.9] tnum sm:text-[88px]">{fmt(p.score)}</span>
               <span className="font-mono text-[13px] text-mute">g CO₂e per 1,000 views</span>
             </div>
-            {p.status !== 'draft' && (
+            {p.type !== 'draft' && (
               <div className="flex flex-col items-end gap-1 text-right">
                 <span className="eyebrow">Views</span>
                 <span className="display text-[28px] font-extrabold tnum">{fmt(p.views)}</span>
@@ -76,10 +84,15 @@ export function PostDetail({ id }) {
             )}
           </div>
           <ScoreBar score={p.score} line={p.line} />
+          <dl className="grid grid-cols-3 gap-3 border-t border-line pt-4 text-[13px]">
+            <div><dt className="text-mute">L line</dt><dd className="font-mono font-semibold">{fmt(p.line)}</dd></div>
+            <div><dt className="text-mute">Benchmark</dt><dd className="font-semibold">{MARKETS[p.market].name} · {FORMATS[p.format].name.toLowerCase()}</dd></div>
+            <div><dt className="text-mute">Status</dt><dd><StatusPill status={p.status} /></dd></div>
+          </dl>
           <p className="text-[15px]">{h.line}</p>
           <div className="flex flex-wrap gap-2">
             {canReceipt && <Button as="a" href={href(`studio-receipt-${p.id}`)}><ReceiptIcon size={17} /> View Impact Receipt</Button>}
-            {p.status === 'qualified' && <Button variant="brand" onClick={() => setShare(true)}><Share2 size={17} /> Share your L Mark</Button>}
+            {earned && <Button variant="brand" onClick={() => setShare(true)}><Download size={17} /> Download or share L Mark</Button>}
             {p.status === 'draft' && <Button onClick={() => go('studio-submit')}>Submit once published <ArrowRight size={16} /></Button>}
           </div>
           {p.status === 'review' && (
@@ -89,8 +102,9 @@ export function PostDetail({ id }) {
             </div>
           )}
         </Card>
+      </div>
 
-        <div className="flex flex-col gap-4">
+      <div className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-3">
           <Card className="flex flex-col gap-1 p-5">
             <span className="eyebrow mb-2">Key factors</span>
             {factors(p).map((f) => (
@@ -115,49 +129,11 @@ export function PostDetail({ id }) {
               {p.notes.map((n, i) => <p key={i} className="text-[14px]"><span className="font-mono text-[12px] text-mute">{n.date}</span> {n.text}</p>)}
             </Card>
           )}
-          {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 self-start text-[13px] text-mute hover:text-ink"><ExternalLink size={14} /> Open the post (demo link)</a>}
-        </div>
       </div>
+      {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 self-start text-[13px] text-mute hover:text-ink"><ExternalLink size={14} /> Open the post (demo link)</a>}
       <DemoNote />
-      <ShareModal open={share} onClose={() => setShare(false)} p={p} />
+      <LMarkModal open={share} onClose={() => setShare(false)} p={p} />
     </div>
-  );
-}
-
-function ShareModal({ open, onClose, p }) {
-  const { notify } = useStore();
-  const [copied, setCopied] = useState(false);
-  const caption = `Took the L on this one: ${fmt(p.score)} g CO₂e per 1,000 views, under the ${fmt(p.line)} L line. Same story, lighter post. #TakingTheL #LMark`;
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(caption);
-      setCopied(true);
-      notify('Caption copied');
-    } catch (e) {
-      const el = document.getElementById('share-caption');
-      el?.select();
-      notify('Select the caption and copy it', 'bad');
-    }
-  };
-  return (
-    <Modal open={open} onClose={onClose} title="Share your L Mark">
-      <div className="flex flex-col gap-5">
-        <div className="flex items-center gap-4 rounded-2xl bg-ink p-5 text-white">
-          <LBox size={56} />
-          <div className="flex flex-col">
-            <span className="font-mono text-[11px] uppercase tracking-widest text-white/60">L Mark · verified</span>
-            <span className="display text-[30px] font-black leading-none tnum">{fmt(p.score)}</span>
-            <span className="font-mono text-[11px] text-white/60">g CO₂e / 1k views · line {fmt(p.line)}</span>
-          </div>
-        </div>
-        <label className="label" htmlFor="share-caption">Caption</label>
-        <textarea id="share-caption" readOnly className="input h-28 resize-none text-[14px]" value={caption} />
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="outline" as="a" href={href(`studio-receipt-${p.id}`)} onClick={onClose}>Open receipt</Button>
-          <Button onClick={copy}>{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied' : 'Copy caption'}</Button>
-        </div>
-      </div>
-    </Modal>
   );
 }
 
@@ -178,6 +154,10 @@ export function MyPosts() {
   const match = (p) => filter === 'all' || p.status === filter || (filter === 'not' && p.status === 'rejected');
   const rows = all.filter(match);
   const count = (v) => all.filter((p) => v === 'all' || p.status === v || (v === 'not' && p.status === 'rejected')).length;
+  const [view, setView] = useState(() => {
+    try { return sessionStorage.getItem('lp.postsView') || 'grid'; } catch (e) { return 'grid'; }
+  });
+  const chooseView = (v) => { setView(v); try { sessionStorage.setItem('lp.postsView', v); } catch (e) { /* ignore */ } };
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -187,10 +167,37 @@ export function MyPosts() {
         </div>
         <Button as="a" href={href('studio-submit')}>Submit a video</Button>
       </div>
-      <Seg label="Filter posts" value={filter} onChange={choose} options={FILTERS.map((f) => ({ value: f.value, label: `${f.label} ${count(f.value)}` }))} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Seg label="Filter posts" value={filter} onChange={choose} options={FILTERS.map((f) => ({ value: f.value, label: `${f.label} ${count(f.value)}` }))} />
+        <Seg label="View" value={view} onChange={chooseView} options={[{ value: 'grid', label: 'Gallery' }, { value: 'list', label: 'List' }]} />
+      </div>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-mute">
+        <span className="flex items-center gap-1.5"><LMark size={12} label={false} /> L Mark earned</span>
+        <span className="flex items-center gap-1.5"><PendingTag className="!border-ink/50 !bg-ink/70" /> Pending verification</span>
+        <span>No mark: not qualified or draft</span>
+      </div>
       {rows.length === 0 ? (
         <Empty title="Nothing here yet" body={filter === 'review' ? 'No posts are waiting for verification.' : 'No posts match this filter.'} action={<Button variant="outline" onClick={() => choose('all')}>Show all posts</Button>} />
       ) : (
+        view === 'grid' ? (
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {rows.map((p) => (
+              <li key={p.id}>
+                <a href={href(`studio-post-${p.id}`)} className="group flex flex-col gap-2">
+                  <div className="relative">
+                    <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="md" play={false} className={cx('aspect-[9/16] w-full rounded-xl transition-transform group-hover:-translate-y-0.5', p.status === 'qualified' && 'ring-2 ring-gold')} label={p.title} />
+                    {p.status === 'draft' && <span className="absolute left-2 top-2 rounded-md border border-dashed border-white/80 bg-ink/60 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-white">Draft</span>}
+                    {p.type !== 'draft' && <span className="absolute bottom-1 left-1 rounded bg-ink/75 px-1 font-mono text-[10px] text-white tnum">▶ {compact(p.views)}</span>}
+                  </div>
+                  <span className="flex flex-col gap-0.5 px-0.5">
+                    <span className="truncate text-[14px] font-semibold">{p.title}</span>
+                    <span className="font-mono text-[12px] text-mute"><b className={p.status === 'qualified' ? 'text-gold-deep' : 'text-ink'}>{fmt(p.score)}</b> / {fmt(p.line)} · {p.platform}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
         <>
           <Card className="hidden overflow-hidden md:block">
             <table className="w-full text-[14px] tnum">
@@ -209,7 +216,7 @@ export function MyPosts() {
                   <tr key={p.id} className="cursor-pointer border-t border-line hover:bg-paper" onClick={() => go(`studio-post-${p.id}`)}>
                     <td className="px-4 py-3">
                       <a href={href(`studio-post-${p.id}`)} className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                        <Thumb index={p.thumb} secs={p.secs} className="h-12 w-[34px]" />
+                        <Thumb index={p.thumb} secs={p.secs} status={p.status} className="h-12 w-[34px]" />
                         <span className="font-semibold">{p.title}</span>
                       </a>
                     </td>
@@ -226,7 +233,7 @@ export function MyPosts() {
           <div className="grid gap-2 md:hidden">
             {rows.map((p) => (
               <a key={p.id} href={href(`studio-post-${p.id}`)} className="flex items-center gap-3 rounded-2xl border border-line bg-white p-3">
-                <Thumb index={p.thumb} secs={p.secs} className="h-16 w-11" />
+                <Thumb index={p.thumb} secs={p.secs} status={p.status} className="h-16 w-11" />
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="truncate text-[15px] font-semibold">{p.title}</span>
                   <span className="text-[12px] text-mute">{p.platform} · {p.submitted}{p.type !== 'draft' ? ` · ${compact(p.views)} views` : ''}</span>
@@ -236,6 +243,7 @@ export function MyPosts() {
             ))}
           </div>
         </>
+        )
       )}
     </div>
   );
@@ -272,7 +280,7 @@ export function Receipt({ id }) {
           </div>
           <div className="flex flex-col gap-5 p-6">
             <div className="flex items-center gap-4">
-              <Thumb index={p.thumb} secs={p.secs} className="h-[92px] w-[64px]" label={p.title} />
+              <Thumb index={p.thumb} secs={p.secs} status={p.status} mark="sm" className="h-[92px] w-[64px]" label={p.title} />
               <div className="flex min-w-0 flex-col gap-1">
                 <span className="font-mono text-[11px] uppercase tracking-wider text-white/55">{me.name} · {me.handle}</span>
                 <b className="text-[17px] leading-snug">{p.title}</b>
@@ -306,13 +314,13 @@ export function Receipt({ id }) {
           <p className="max-w-md text-[15px] text-mute">Proof that this post landed under the L line. Post it to your story, pin it to the comments, or attach it to a campaign report.</p>
           <div className="flex flex-wrap gap-2">
             <Button onClick={download} disabled={busy}>{busy ? <Spinner size={16} /> : <Download size={17} />} {busy ? 'Preparing…' : 'Download receipt'}</Button>
-            <Button variant="brand" onClick={() => setShare(true)} disabled={!verified}><Share2 size={17} /> Share your L Mark</Button>
+            <Button variant="brand" onClick={() => setShare(true)} disabled={!verified}><Share2 size={17} /> Get the L Mark</Button>
           </div>
           {!verified && <p className="text-[13px] text-warn">Sharing unlocks once the post is verified.</p>}
           <DemoNote>Download and share are simulated in this prototype.</DemoNote>
         </div>
       </div>
-      <ShareModal open={share} onClose={() => setShare(false)} p={p} />
+      <LMarkModal open={share} onClose={() => setShare(false)} p={p} />
     </div>
   );
 }

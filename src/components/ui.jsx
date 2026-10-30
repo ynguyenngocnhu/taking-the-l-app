@@ -72,16 +72,45 @@ export function duration(secs) {
   return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
 }
 
-export function Thumb({ index, secs, className, label }) {
+// Video thumbnail. A qualifying post carries the L Mark in the top-right corner;
+// a post under review carries a Pending tag; anything else carries nothing.
+const MARK = { xs: { s: 11, label: false, pad: 'top-1 right-1' }, sm: { s: 15, label: false, pad: 'top-1.5 right-1.5' }, md: { s: 18, label: true, pad: 'top-2 right-2' }, lg: { s: 30, label: true, pad: 'top-3 right-3' } };
+
+export function Thumb({ index, secs, className, label, status, mark = 'xs', play = true }) {
   const [a, b] = THUMBS[index % THUMBS.length];
+  const m = MARK[mark] || MARK.xs;
+  const big = mark === 'md' || mark === 'lg';
   return (
-    <div className={cx('relative shrink-0 overflow-hidden rounded-lg', className)} style={{ background: `linear-gradient(160deg, ${a}, ${b})` }} role="img" aria-label={label || 'Video thumbnail'}>
+    <div className={cx('relative shrink-0 overflow-hidden rounded-lg', className)} style={{ background: `linear-gradient(160deg, ${a}, ${b})` }} role="img" aria-label={`${label || 'Video thumbnail'}${status === 'qualified' ? ', L Mark earned' : status === 'review' ? ', pending verification' : ''}`}>
       <div className="absolute inset-x-[20%] top-[14%] bottom-[34%] rounded-t-full bg-white/30" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/85"><Play size={12} className="ml-0.5 text-ink" fill="currentColor" /></span>
-      </div>
-      {secs != null && <span className="absolute bottom-1 right-1 rounded bg-ink/75 px-1 font-mono text-[10px] text-white tnum">{duration(secs)}</span>}
+      {play && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className={cx('flex items-center justify-center rounded-full bg-white/85', mark === 'lg' ? 'h-14 w-14' : 'h-7 w-7')}><Play size={mark === 'lg' ? 22 : 12} className="ml-0.5 text-ink" fill="currentColor" /></span>
+        </div>
+      )}
+      {status === 'qualified' && <LMark size={m.s} label={m.label} className={cx('absolute', m.pad)} />}
+      {status === 'review' && big && <PendingTag className={cx('absolute', mark === 'lg' ? 'left-3 top-3' : 'left-2 top-2')} large={mark === 'lg'} />}
+      {status === 'review' && !big && <span className={cx('absolute flex items-center justify-center rounded-full bg-ink/70 text-white', mark === 'sm' ? 'right-1.5 top-1.5 h-5 w-5' : 'right-1 top-1 h-3.5 w-3.5')} title="Pending verification"><Clock size={mark === 'sm' ? 11 : 8} strokeWidth={3} /></span>}
+      {secs != null && <span className={cx('absolute rounded bg-ink/75 px-1 font-mono text-white tnum', mark === 'lg' ? 'bottom-3 right-3 text-[12px]' : 'bottom-1 right-1 text-[10px]')}>{duration(secs)}</span>}
     </div>
+  );
+}
+
+// The L Mark: a gold L tile framed in black with a gold ring. Gold is reserved for earned recognition.
+export function LMark({ size = 18, label = true, text = 'L Earned', className }) {
+  return (
+    <span className={cx('inline-flex items-center rounded-[7px] bg-ink/90 shadow-[0_2px_8px_rgba(0,0,0,.35)] ring-1 ring-gold', className)} style={{ padding: Math.max(2, size * 0.14), gap: size * 0.3, paddingRight: label ? size * 0.45 : undefined }}>
+      <span className="flex items-center justify-center rounded-[4px] bg-gold text-ink" style={{ width: size, height: size }}><LGlyph size={size * 0.74} weight={0.24} /></span>
+      {label && <span className="whitespace-nowrap font-mono font-bold uppercase text-gold-text" style={{ fontSize: Math.max(9, size * 0.42), letterSpacing: '0.14em' }}>{text}</span>}
+    </span>
+  );
+}
+
+export function PendingTag({ className, large }) {
+  return (
+    <span className={cx('inline-flex items-center gap-1 rounded-md border border-dashed border-white/80 bg-ink/60 font-mono font-bold uppercase tracking-[0.12em] text-white', large ? 'px-2 py-1 text-[11px]' : 'px-1.5 py-0.5 text-[9px]', className)}>
+      <Clock size={large ? 12 : 10} strokeWidth={2.5} /> Pending
+    </span>
   );
 }
 

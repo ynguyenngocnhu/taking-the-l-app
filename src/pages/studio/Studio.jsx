@@ -83,7 +83,7 @@ function Dashboard() {
         <Card className="divide-y divide-line">
           {recent.map((p) => (
             <a key={p.id} href={href(`studio-post-${p.id}`)} className="flex items-center gap-4 px-4 py-3 hover:bg-paper">
-              <Thumb index={p.thumb} secs={p.secs} className="h-14 w-10" />
+              <Thumb index={p.thumb} secs={p.secs} status={p.status} className="h-14 w-10" />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-[15px] font-semibold">{p.title}</span>
                 <span className="text-[12px] text-mute">{p.platform} · {p.submitted}{p.type !== 'draft' ? ` · ${compact(p.views)} views` : ' · draft'}</span>

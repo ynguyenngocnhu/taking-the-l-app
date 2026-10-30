@@ -105,7 +105,7 @@ export function CreatorProfile({ id }) {
             <tbody>
               {posts.map((p) => (
                 <tr key={p.id} className="border-t border-line">
-                  <td className="px-4 py-2.5"><span className="flex items-center gap-3"><Thumb index={p.thumb} secs={p.secs} className="h-11 w-8" /><span className="flex flex-col"><b>{p.title}</b><span className="text-[12px] text-mute">{p.platform} · {p.secs} s · {p.res}</span></span></span></td>
+                  <td className="px-4 py-2.5"><span className="flex items-center gap-3"><Thumb index={p.thumb} secs={p.secs} status={p.status} className="h-11 w-8" /><span className="flex flex-col"><b>{p.title}</b><span className="text-[12px] text-mute">{p.platform} · {p.secs} s · {p.res}</span></span></span></td>
                   <td className="px-2 py-2.5 text-right font-mono">{p.type === 'draft' ? '–' : fmt(p.views)}</td>
                   <td className="px-2 py-2.5 text-right font-mono"><b>{fmt(p.score)}</b><span className="text-mute"> / {fmt(p.line)}</span></td>
                   <td className="px-2 py-2.5"><StatusPill status={p.status} /></td>
