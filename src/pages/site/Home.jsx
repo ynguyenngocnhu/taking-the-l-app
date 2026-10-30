@@ -36,7 +36,7 @@ function Intro() {
   const items = [
     ['What L is', "A public standard from L'Oréal that measures how much a video weighs per view, and recognises posts that come in lighter than their market."],
     ['Why it matters', 'Every second of video is streamed to every viewer. Shorter, right-sized video carries the same story with less energy behind each view.'],
-    ['How creators take part', 'Estimate a cut before posting, then submit the published post. Posts that qualify after verification carry the L Mark.'],
+    ['How creators take part', 'Estimate a video before posting, then submit the published post. Posts that qualify after verification carry the L Mark.'],
     ['How brands use it', 'Verified posts show their L-Score, L line and campaign, so brands can find and recognise qualifying content post by post.'],
   ];
   return (

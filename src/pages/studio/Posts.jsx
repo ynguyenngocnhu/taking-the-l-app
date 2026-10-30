@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, ArrowUpRight, ShieldCheck, Share2, Upload, Scissors, AlertTriangle, Clock, Send } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, ShieldCheck, Share2, Upload, ArrowDownRight, AlertTriangle, Clock, Send } from 'lucide-react';
 import { Button, Card, Empty, Field, LMark, PageHead, ScoreBar, Seg, StatusPill, Thumb, DemoNote, cx } from '../../components/ui.jsx';
 import { CampaignTag, ImpactReceipt, ShareCardModal, contextLabel } from '../../components/PostBits.jsx';
 import { useStore, useMe, enrich, campaignLabel } from '../../lib/store.jsx';
@@ -122,20 +122,14 @@ function Detail({ k, children }) {
 
 function WhyNot({ p }) {
   const { state } = useStore();
-  const perSec = p.score / p.secs;
-  // Longest cut that would come in at or under the line for its own format.
-  let target = null;
-  for (let s = p.secs - 1; s >= 5; s--) {
-    if (lScore({ ...p, secs: s }) <= lineFor(state.benchmarks, p.market, s)) { target = s; break; }
-  }
   const lowerRes = p.res !== '720p' ? lScore({ ...p, res: '720p' }) : null;
   return (
     <Card className="flex flex-col gap-3 p-5">
       <h2 className="text-[17px] font-bold">Why this post did not qualify</h2>
       <p className="text-[14px] text-ink-2">Its L-Score of {fmt(p.score)} g is {fmt(p.score - p.line)} g ({Math.round((p.score / p.line - 1) * 100)}%) above the {fmt(p.line)} g L line for {contextLabel(p)}. The score is official, but only posts at or below the line carry the L Mark.</p>
       <ul className="flex flex-col gap-2 text-[14px]">
-        {target && <li className="flex items-start gap-2"><Scissors size={16} className="mt-0.5 shrink-0" /> A {target} s cut would have come in at about {fmt(Math.round(perSec * target))} g, under its line.</li>}
-        {lowerRes && <li className="flex items-start gap-2"><Scissors size={16} className="mt-0.5 shrink-0" /> Publishing at 720p instead of {p.res} would estimate at {fmt(lowerRes)} g.</li>}
+        <li className="flex items-start gap-2"><ArrowDownRight size={16} className="mt-0.5 shrink-0" /> Duration is the biggest factor: every second is streamed to every viewer.</li>
+        {lowerRes && <li className="flex items-start gap-2"><ArrowDownRight size={16} className="mt-0.5 shrink-0" /> Publishing at 720p instead of {p.res} would estimate at {fmt(lowerRes)} g.</li>}
       </ul>
     </Card>
   );

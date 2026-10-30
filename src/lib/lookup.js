@@ -13,7 +13,7 @@ export function platformFromUrl(url) {
 
 export function mockFetch(url) {
   const u = (url || '').trim();
-  if (u === SAMPLE_URL) return { views: 125000, secs: 30, res: '1080p', title: 'Brow tutorial: the 30 s cut' };
+  if (u === SAMPLE_URL) return { views: 125000, secs: 30, res: '1080p', title: 'Brow tutorial in 30 seconds' };
   const m = u.match(/\/video\/(\d{6,})|\/(?:reel|p)\/([\w-]{5,})|\/shorts\/([\w-]{5,})|[?&]v=([\w-]{5,})|youtu\.be\/([\w-]{5,})/i);
   if (!m) return null;
   let h = 7;

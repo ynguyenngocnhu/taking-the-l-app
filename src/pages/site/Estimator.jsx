@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Link2, UploadCloud, SlidersHorizontal, Info, ArrowRight, Scissors } from 'lucide-react';
+import { Link2, UploadCloud, SlidersHorizontal, Info, ArrowRight } from 'lucide-react';
 import { Button, Card, Field, Seg, ScoreBar, Spinner, cx } from '../../components/ui.jsx';
 import { useStore } from '../../lib/store.jsx';
 import { href } from '../../lib/router.js';
@@ -20,8 +20,6 @@ export default function Estimator() {
   const score = lScore(f);
   const line = lineFor(state.benchmarks, f.market, f.secs);
   const under = score <= line;
-  const half = Math.max(5, Math.round(f.secs / 2));
-  const halfScore = lScore({ ...f, secs: half });
   const rows = useMemo(() => factors(f), [f]);
 
   const readLink = () => {
@@ -127,12 +125,6 @@ export default function Estimator() {
                   ? <>This estimate is <b>at or under</b> the {fmt(line)} g L line for {MARKETS[f.market].name}, {FORMATS[formatOf(f.secs)].name.toLowerCase()}. To be recognised, publish it and submit the post for verification.</>
                   : <>This estimate is <b>over</b> the {fmt(line)} g L line for {MARKETS[f.market].name}, {FORMATS[formatOf(f.secs)].name.toLowerCase()}.</>}
               </p>
-              {f.secs > 10 && (
-                <div className="flex items-start gap-3 rounded-xl bg-paper p-4 text-[14px]">
-                  <Scissors size={18} className="mt-0.5 shrink-0" />
-                  <span>A {half} s cut would estimate at <b className="font-mono">{fmt(halfScore)} g</b>, {Math.round((1 - halfScore / score) * 100)}% lighter{halfScore <= lineFor(state.benchmarks, f.market, half) ? ', under its line.' : '.'}</span>
-                </div>
-              )}
               <p className="flex items-start gap-2 text-[12px] text-mute"><Info size={14} className="mt-0.5 shrink-0" /> Estimates never carry the L Mark. Only a published post verified through Creator Studio can qualify. Prototype figures are illustrative.</p>
             </Card>
 

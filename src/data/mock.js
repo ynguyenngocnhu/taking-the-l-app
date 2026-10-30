@@ -43,12 +43,12 @@ export const CAMPAIGNS = [
   {
     id: 'k2', name: 'The Invisible Edit', brand: "L'Oréal Paris", status: 'Live', tone: 1,
     markets: ['VN', 'ID', 'IN'],
-    description: 'Re-cut one of your 60-second tutorials into a 30-second version. Same steps, same story, half the seconds.',
-    objective: 'Show that a shorter cut keeps the story and the results.',
-    requirements: ['Start from a tutorial you already published', 'Keep the hook and the result shot', 'The new cut is half the length or less'],
-    deliverables: ['1 shorter version posted on the same account', 'Submit the published post link in Creator Studio'],
+    description: 'Tell a full tutorial in 30 seconds or less. Same steps, same story, no dead air.',
+    objective: 'Show that a short tutorial keeps the story and the results.',
+    requirements: ['Vertical 9:16, 30 seconds or less', 'Keep the hook and the result shot', 'Show every step on screen'],
+    deliverables: ['1 tutorial post on your own account', 'Submit the published post link in Creator Studio'],
     hashtags: ['#TheInvisibleEdit', '#TakingTheL'], mentions: ['@lorealparis'],
-    eligibility: ['A published tutorial of 45 seconds or more', 'Creator Studio profile in an eligible market'],
+    eligibility: ['Tutorial content in the last 90 days', 'Creator Studio profile in an eligible market'],
     reward: '$500 campaign fee', start: '2026-10-10', end: '2026-12-15', deadline: '2026-12-22',
   },
   {
@@ -81,7 +81,7 @@ const ALEX_POSTS = [
   { id: 'p103', title: 'SPF the right way', platform: 'TikTok', secs: 35, res: '1080p', views: 64200, status: 'qualified', submitted: '2026-10-11', verified: '2026-10-13', campaignId: null, thumb: 1 },
   { id: 'p104', title: 'Night routine, no fluff', platform: 'Instagram', secs: 32, res: '1080p', views: 41800, status: 'qualified', submitted: '2026-10-15', verified: '2026-10-16', campaignId: null, thumb: 4 },
   { id: 'p105', title: 'Full GRWM for a wedding', platform: 'TikTok', secs: 75, res: '1080p', views: 152000, status: 'not', submitted: '2026-10-17', verified: '2026-10-18', campaignId: null, thumb: 2 },
-  { id: 'p106', title: 'Brow tutorial: the 30 s cut', platform: 'TikTok', secs: 30, res: '1080p', views: 210500, status: 'qualified', submitted: '2026-10-19', verified: '2026-10-20', campaignId: 'k2', thumb: 5 },
+  { id: 'p106', title: 'Brow tutorial in 30 seconds', platform: 'TikTok', secs: 30, res: '1080p', views: 210500, status: 'qualified', submitted: '2026-10-19', verified: '2026-10-20', campaignId: 'k2', thumb: 5 },
   { id: 'p107', title: 'Dewy base in three steps', platform: 'TikTok', secs: 28, res: '1080p', views: 47900, status: 'qualified', submitted: '2026-10-23', verified: '2026-10-24', campaignId: null, thumb: 6 },
   { id: 'p108', title: 'Hair oil in 20 seconds', platform: 'TikTok', secs: 20, res: '1080p', views: 31200, status: 'review', submitted: '2026-10-27', verified: null, campaignId: 'k1', thumb: 7 },
   { id: 'p109', title: 'Lip combo, one product', platform: 'Instagram', secs: 26, res: '1080p', views: 22800, status: 'info', submitted: '2026-10-28', verified: null, campaignId: null, thumb: 1, notes: [{ by: 'Verification team', date: '2026-10-29', text: 'The link opens a private post. Make it public or send a new link.' }] },
@@ -91,7 +91,7 @@ const ALEX_POSTS = [
 ].map((p) => ({ creatorId: 'c1', market: 'VN', notes: [], url: urlFor(p.platform, 'alex.tran.makes', p.id), ...p }));
 
 const TITLES = [
-  'Five-minute face, cut to 30', 'Skin prep before makeup', 'Curls without heat', 'Sunscreen reapply hack',
+  'Five-minute face in 30 seconds', 'Skin prep before makeup', 'Curls without heat', 'Sunscreen reapply hack',
   'Office-to-dinner look', 'Brow lamination at home', 'Blush placement for round faces', 'Serum layering order',
   'Glass skin, real talk', 'Quick beard care', 'Rainy-day frizz fix', 'One-product eye look',
   'Hair mask Sunday', 'Liner for hooded eyes', 'Minimal makeup for school', 'Lip liner trick',

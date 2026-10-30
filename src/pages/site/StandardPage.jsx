@@ -41,23 +41,22 @@ function Formula() {
 
 function Example() {
   const base = { res: '1080p', platform: 'TikTok', market: 'VN' };
-  const long = lScore({ ...base, secs: 60 });
-  const short = lScore({ ...base, secs: 30 });
-  const max = long * 1.1;
+  const rows = [15, 30, 60].map((secs) => [`${secs} s post`, lScore({ ...base, secs })]);
+  const max = rows[rows.length - 1][1] * 1.1;
   return (
     <Card className="flex flex-col gap-5 p-6">
       <div className="flex flex-col gap-1">
         <span className="eyebrow">Worked example</span>
-        <h3 className="text-[20px] font-bold">The same tutorial, cut from 60 to 30 seconds</h3>
-        <p className="text-[14px] text-mute">1080p, TikTok, watched in Vietnam. Same story, half the seconds, half the weight per view.</p>
+        <h3 className="text-[20px] font-bold">How duration drives the score</h3>
+        <p className="text-[14px] text-mute">1080p, TikTok, watched in Vietnam. Every second is streamed to every viewer, so the score rises with length.</p>
       </div>
-      {[['60 s version', long], ['30 s version', short]].map(([l, v]) => (
+      {rows.map(([l, v]) => (
         <div key={l} className="flex flex-col gap-1.5">
           <div className="flex justify-between text-[14px]"><span>{l}</span><b className="font-mono tnum">{fmt(v)} g</b></div>
-          <div className="h-3 rounded-full bg-ink/[0.08]"><div className={cx('h-3 rounded-full', v === short ? 'bg-ink' : 'bg-line-strong')} style={{ width: `${(v / max) * 100}%` }} /></div>
+          <div className="h-3 rounded-full bg-ink/[0.08]"><div className="h-3 rounded-full bg-ink" style={{ width: `${(v / max) * 100}%` }} /></div>
         </div>
       ))}
-      <p className="font-mono text-[12px] text-mute">{RESOLUTIONS['1080p'].mbps} Mbps at 1080p · {(30 * RESOLUTIONS['1080p'].mbps / 8).toFixed(1)} MB per view for the 30 s cut</p>
+      <p className="font-mono text-[12px] text-mute">{RESOLUTIONS['1080p'].mbps} Mbps at 1080p · {(30 * RESOLUTIONS['1080p'].mbps / 8).toFixed(1)} MB per view for a 30 s post</p>
     </Card>
   );
 }
