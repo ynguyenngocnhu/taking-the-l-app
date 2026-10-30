@@ -2,9 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { Check, Clock, X, Sparkles, Play, AlertTriangle, Info } from 'lucide-react';
 import { THUMBS } from '../data/mock.js';
 import { CoverArt } from './Cover.jsx';
-
-// Sample video covers supplied by the team. Falls back to the illustrated covers if the folder is empty.
-const COVERS = Object.values(import.meta.glob('../assets/covers/*.{jpg,jpeg,png,webp}', { eager: true, query: '?url', import: 'default' }));
 import { fmt } from '../lib/score.js';
 import { useStore } from '../lib/store.jsx';
 
@@ -84,9 +81,7 @@ export function Thumb({ index, secs, className, label, status, mark = 'xs', play
   const big = mark === 'md' || mark === 'lg';
   return (
     <div className={cx('relative shrink-0 overflow-hidden rounded-lg', className)} style={{ background: `linear-gradient(160deg, ${a}, ${b})` }} role="img" aria-label={`${label || 'Video thumbnail'}${status === 'qualified' ? ', verified with the L Mark' : status === 'review' || status === 'info' ? ', pending verification' : ''}`}>
-      {COVERS.length
-        ? <img src={COVERS[index % COVERS.length]} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" draggable="false" />
-        : <CoverArt title={label} index={index} a={a} b={b} />}
+      <CoverArt title={label} index={index} a={a} b={b} />
       {big && label && (
         <div className={cx('absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/45 to-transparent', mark === 'lg' ? 'px-4 pb-12 pt-16' : 'px-3 pb-10 pt-12')}>
           <p className={cx('font-extrabold leading-[1.25]', mark === 'lg' ? 'text-[19px]' : 'text-[14px]')} style={{ fontFamily: 'Archivo, system-ui, sans-serif' }}>
