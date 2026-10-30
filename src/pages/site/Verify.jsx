@@ -7,6 +7,7 @@ import { href } from '../../lib/router.js';
 import { MARKETS, FORMATS, fmt, compact } from '../../lib/score.js';
 import { SampleNote } from './common.jsx';
 import { VerifyLookup } from './Verified.jsx';
+import { Endorsement } from '../../components/Loreal.jsx';
 
 function Row({ k, children }) {
   return (
@@ -101,6 +102,10 @@ export default function Verify({ id }) {
               <ShieldCheck size={20} className="mt-0.5 shrink-0" />
               <span>This page is the proof of verification. A copy of the L Mark image on its own is not. If the post link or account above does not match what you are looking at, the post is not this one.</span>
             </Card>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4">
+              <Endorsement height={12} textClass="text-mute" />
+              <span className="text-[12px] text-mute">Verified under the L Standard</span>
+            </div>
             <SampleNote />
           </div>
         </div>

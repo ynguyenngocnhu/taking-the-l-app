@@ -7,13 +7,14 @@ import { href } from '../../lib/router.js';
 import { MARKETS } from '../../lib/score.js';
 import { LOREALISTAR } from '../../data/mock.js';
 import { Section, SampleNote } from './common.jsx';
+import { Endorsement } from '../../components/Loreal.jsx';
 
 function Hero() {
   return (
     <section className="gutter relative overflow-hidden bg-ink text-white">
       <div className="mx-auto grid max-w-[1240px] items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.2fr_1fr]">
         <div className="flex flex-col gap-8">
-          <span className="eyebrow text-white/50">An L'Oréal initiative</span>
+          <Endorsement tone="white" height={16} textClass="text-white/55" />
           <h1 className="font-black uppercase leading-[0.86] tracking-[-0.01em]" style={{ fontFamily: 'Archivo, system-ui, sans-serif', fontStretch: '78%', fontSize: 'clamp(64px, 13vw, 168px)' }}>
             Taking<br />the L.
           </h1>

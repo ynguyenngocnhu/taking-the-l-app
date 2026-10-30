@@ -3,6 +3,7 @@ import { Menu, X, RotateCcw, LogOut, ArrowUpRight, ExternalLink } from 'lucide-r
 import { LBox, cx, Button, Modal, Avatar } from './ui.jsx';
 import { href, go } from '../lib/router.js';
 import { useStore, useMe } from '../lib/store.jsx';
+import { LorealLogo, LOREAL_LOGO, Endorsement } from './Loreal.jsx';
 
 // ---------------------------------------------------------------- public
 
@@ -29,9 +30,11 @@ export function PublicHeader({ page }) {
       <SafeTop />
       <header className="gutter sticky top-[env(safe-area-inset-top,0px)] z-30 bg-ink text-white">
         <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-4">
-          <a href={href('home')} className="flex items-center gap-3" aria-label="Taking the L, home">
-            <LBox size={30} />
-          </a>
+          <span className="flex items-center gap-3">
+            <a href={href('home')} aria-label="Taking the L, home"><LBox size={30} /></a>
+            {LOREAL_LOGO.white && <span className="hidden h-5 w-px bg-white/25 sm:block" aria-hidden="true" />}
+            <LorealLogo tone="white" height={11} className="hidden opacity-80 sm:inline-flex" />
+          </span>
           <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
             {PUBLIC_NAV.slice(1).map((n) => (
               <a key={n.page} href={href(n.page)} aria-current={current === n.page ? 'page' : undefined} className={cx('rounded-full px-3 py-2 text-[14px] font-medium transition-colors', current === n.page ? 'text-white' : 'text-white/60 hover:text-white')}>
@@ -72,7 +75,8 @@ export function PublicFooter() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="flex flex-col gap-3">
             <LBox size={40} />
-            <p className="max-w-xs text-[14px] text-white/60">An L'Oréal initiative. A public standard for lighter video, verified post by post.</p>
+            <p className="max-w-xs text-[14px] text-white/60">A L'Oréal initiative. A public standard for lighter video, verified post by post.</p>
+            <LorealLogo tone="white" height={22} className="-ml-[11px] self-start" />
           </div>
           <FooterCol title="The standard" links={[['The L Standard', 'standard'], ['L-Score Estimator', 'estimator'], ['Verified Posts', 'verified']]} />
           <FooterCol title="Take part" links={[['Join L', 'join'], ['For Brands', 'brands'], ['Creator Studio', 'studio']]} />
@@ -112,6 +116,7 @@ export function AppHeader({ label, right, homeTo }) {
             <LBox size={28} />
             <span className="text-[15px] font-semibold">{label}</span>
           </a>
+          <Endorsement tone="white" height={10} className="mr-auto hidden opacity-70 md:inline-flex" textClass="text-white/60 border-l border-white/20 pl-3" />
           <div className="flex items-center gap-2">{right}</div>
         </div>
       </header>
