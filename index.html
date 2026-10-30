@@ -3,24 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0D0D0D">
-<title>Taking the L · L-Score</title>
-<meta name="description" content="Weigh a creator post: grams of CO2e per 1,000 views, from public inputs. Prototype for the L'Oréal SAPMENA Limitless Pitch 2026.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23E52521'/%3E%3Cpath d='M10 6v20h13' stroke='%230D0D0D' stroke-width='5' fill='none'/%3E%3C/svg%3E">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>L Platform</title>
+<meta name="description" content="L Platform prototype: the L Standard, Creator Studio and Admin Console. All data is fictional demo data.">
+<meta name="theme-color" content="#F4F4EF">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23C6F135'/%3E%3Cpath d='M11 7v18h12' stroke='%23121411' stroke-width='5' fill='none'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
 </head>
 <body>
-<div class="shell">
-  <main id="app" tabindex="-1"></main>
-  <nav class="nav" aria-label="Main">
-    <a href="#posts" data-tab="posts">Posts</a>
-    <a href="#weigh" data-tab="weigh">Weigh</a>
-    <a href="#earnings" data-tab="earnings">Earnings</a>
-    <a href="#method" data-tab="method">Method</a>
-  </nav>
-</div>
-<script src="app.js"></script>
+<div id="root"></div>
+<script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
