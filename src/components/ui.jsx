@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Check, Clock, X, Sparkles, Play, AlertTriangle, Info } from 'lucide-react';
 import { THUMBS } from '../data/mock.js';
+import { CoverArt } from './Cover.jsx';
 import { fmt } from '../lib/score.js';
 import { useStore } from '../lib/store.jsx';
 
@@ -80,7 +81,14 @@ export function Thumb({ index, secs, className, label, status, mark = 'xs', play
   const big = mark === 'md' || mark === 'lg';
   return (
     <div className={cx('relative shrink-0 overflow-hidden rounded-lg', className)} style={{ background: `linear-gradient(160deg, ${a}, ${b})` }} role="img" aria-label={`${label || 'Video thumbnail'}${status === 'qualified' ? ', verified with the L Mark' : status === 'review' || status === 'info' ? ', pending verification' : ''}`}>
-      <div className="absolute inset-x-[20%] top-[14%] bottom-[34%] rounded-t-full bg-white/30" />
+      <CoverArt title={label} index={index} a={a} b={b} />
+      {big && label && (
+        <div className={cx('absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/45 to-transparent', mark === 'lg' ? 'px-4 pb-12 pt-16' : 'px-3 pb-10 pt-12')}>
+          <p className={cx('font-extrabold leading-[1.25]', mark === 'lg' ? 'text-[19px]' : 'text-[14px]')} style={{ fontFamily: 'Archivo, system-ui, sans-serif' }}>
+            <span className="rounded-[3px] bg-white px-1.5 py-0.5 text-ink [box-decoration-break:clone] [-webkit-box-decoration-break:clone]">{label}</span>
+          </p>
+        </div>
+      )}
       {play && (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className={cx('flex items-center justify-center rounded-full bg-white/85', mark === 'lg' ? 'h-14 w-14' : 'h-7 w-7')}><Play size={mark === 'lg' ? 22 : 12} className="ml-0.5 text-ink" fill="currentColor" /></span>
