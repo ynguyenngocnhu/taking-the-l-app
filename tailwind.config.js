@@ -4,16 +4,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: '#F4F4EF',
+        paper: '#F3EFE7',
         card: '#FFFFFF',
-        ink: { DEFAULT: '#121411', 2: '#2B2E29' },
-        mute: '#646860',
-        soft: '#8E928A',
-        line: { DEFAULT: '#E3E4DD', strong: '#C9CBC2' },
-        lime: { DEFAULT: '#C6F135', soft: '#EEFBC4', deep: '#5F8A00' },
+        ink: { DEFAULT: '#0D0D0D', 2: '#262423' },
+        mute: '#5F5A52',
+        soft: '#8F897F',
+        line: { DEFAULT: '#E3DDD2', strong: '#C8C0B2' },
+        brand: { DEFAULT: '#E52521', soft: '#FADDD9', deep: '#C41E1A', text: '#F0302B' },
         chart: { blue: '#4F63C9', green: '#6E9E0A', red: '#C8473A' },
         warn: { DEFAULT: '#8A5A00', bg: '#FFF1D6' },
-        bad: { DEFAULT: '#A8322A', bg: '#FDE7E4' },
+        bad: { DEFAULT: '#A11712', bg: '#FBE3E0' },
+        over: { DEFAULT: '#3B3833', bg: '#E6E0D5' },
       },
       fontFamily: {
         display: ['Archivo', 'system-ui', 'sans-serif'],

@@ -25,37 +25,37 @@ function Section({ id, eyebrow, title, intro, children, className }) {
 
 function Hero() {
   return (
-    <section className="gutter relative overflow-hidden border-b border-line">
+    <section className="gutter relative overflow-hidden bg-ink text-paper">
       {/* The giant L: the page's one bold move */}
       <div aria-hidden="true" className="pointer-events-none absolute -right-[8vw] top-8 hidden h-[620px] w-[520px] md:block">
-        <div className="absolute left-0 top-0 h-full w-[34%] rounded-[28px] bg-lime" />
-        <div className="absolute bottom-0 left-0 h-[30%] w-full rounded-[28px] bg-lime" />
+        <div className="absolute left-0 top-0 h-full w-[34%] rounded-[28px] bg-brand" />
+        <div className="absolute bottom-0 left-0 h-[30%] w-full rounded-[28px] bg-brand" />
       </div>
       <div className="relative mx-auto flex max-w-[1180px] flex-col gap-8 pb-16 pt-14 sm:pb-24 sm:pt-20">
-        <span className="eyebrow flex items-center gap-2"><LBox size={18} /> A creator sustainability initiative by L'Oréal</span>
+        <span className="eyebrow flex items-center gap-2 text-white/60"><LBox size={18} /> A creator sustainability initiative by L'Oréal</span>
         <h1 className="display-tight max-w-[820px] text-[56px] font-black uppercase leading-[0.88] tracking-[-0.01em] sm:text-[96px] lg:text-[124px]">
           Taking the L.<br />
           <span className="relative inline-block">
             Redefining
-            <span aria-hidden="true" className="absolute -bottom-1 left-0 h-[10px] w-full bg-lime sm:h-[16px]" />
+            <span aria-hidden="true" className="absolute -bottom-1 left-0 h-[10px] w-full bg-brand sm:h-[16px]" />
           </span>{' '}
           the win.
         </h1>
-        <p className="max-w-[540px] text-[18px] leading-relaxed text-ink-2 sm:text-[20px]">
+        <p className="max-w-[540px] text-[18px] leading-relaxed text-white/75 sm:text-[20px]">
           Taking the L is no longer about losing. It's about making every view count, with less digital impact.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button size="lg" onClick={() => scrollTo('what')}>Explore the L Standard <ArrowDown size={18} /></Button>
-          <Button size="lg" variant="lime" as="a" href={href('studio')}>Join the L Movement <ArrowRight size={18} /></Button>
+          <Button size="lg" variant="brand" onClick={() => scrollTo('what')}>Explore the L Standard <ArrowDown size={18} /></Button>
+          <Button size="lg" variant="light" as="a" href={href('studio')}>Join the L Movement <ArrowRight size={18} /></Button>
         </div>
-        <dl className="mt-6 grid max-w-[640px] grid-cols-3 gap-4 border-t border-line pt-6">
+        <dl className="mt-6 grid max-w-[640px] grid-cols-3 gap-4 border-t border-white/15 pt-6">
           {[
             ['g CO₂e', 'per 1,000 views'],
             ['610', 'Vietnam L line, short video'],
             ['10', 'L posts a quarter to be an L Creator'],
           ].map(([v, k]) => (
             <div key={k} className="flex flex-col gap-1">
-              <dt className="order-2 text-[12px] leading-snug text-mute">{k}</dt>
+              <dt className="order-2 text-[12px] leading-snug text-white/55">{k}</dt>
               <dd className="display order-1 text-[22px] font-extrabold sm:text-[28px]">{v}</dd>
             </div>
           ))}
@@ -79,7 +79,7 @@ function WhatIsL() {
             <Card className="flex h-full flex-col gap-4 p-6">
               <div className="flex items-center justify-between">
                 <span className="display text-[44px] font-black leading-none text-line-strong">{s.n}</span>
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-lime"><s.Icon size={20} /></span>
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand"><s.Icon size={20} /></span>
               </div>
               <h3 className="display text-[24px] font-extrabold">{s.t}</h3>
               <p className="text-[15px] leading-relaxed text-mute">{s.d}</p>
@@ -118,7 +118,7 @@ function ScoreIntro() {
                 <span className="eyebrow">Market and format benchmark</span>
                 <span className="font-mono text-[15px] font-semibold">L line 610 · Vietnam · short video</span>
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-lime px-3 py-1.5 text-[14px] font-bold"><LGlyph size={16} /> Qualified: earned an L</span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-brand px-3 py-1.5 text-[14px] font-bold"><LGlyph size={16} /> Qualified: earned an L</span>
             </div>
           </div>
         </Card>
@@ -129,7 +129,7 @@ function ScoreIntro() {
             ['Benchmarked fairly', 'Each market and format has its own L line, because grids and formats differ. A creator is only compared with like for like.'],
           ].map(([t, d]) => (
             <div key={t} className="flex gap-4">
-              <LGlyph size={22} className="mt-1 shrink-0 text-lime-deep" />
+              <LGlyph size={22} className="mt-1 shrink-0 text-brand-deep" />
               <div className="flex flex-col gap-1">
                 <h3 className="text-[17px] font-bold">{t}</h3>
                 <p className="text-[15px] leading-relaxed text-mute">{d}</p>
@@ -163,7 +163,7 @@ function HowItWorks() {
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className="text-[15px] font-bold">{i.t}</span>
               <span className="text-[14px] text-mute">{i.d}</span>
-              <span className="mt-1 font-mono text-[11px] uppercase tracking-wider text-lime-deep">{i.src}</span>
+              <span className="mt-1 font-mono text-[11px] uppercase tracking-wider text-brand-deep">{i.src}</span>
             </div>
           </Card>
         ))}
@@ -239,7 +239,7 @@ function Programme() {
             <div className="rounded-xl bg-paper p-3"><b className="block text-[15px]">L-Media Fund</b>+30% paid reach</div>
             <div className="rounded-xl bg-paper p-3"><b className="block text-[15px]">Lighter Rate</b>+2 pts commission</div>
           </div>
-          <Button variant="lime" as="a" href={href('studio')}>Open Creator Studio <ArrowRight size={17} /></Button>
+          <Button variant="brand" as="a" href={href('studio')}>Open Creator Studio <ArrowRight size={17} /></Button>
         </div>
       </div>
     </Section>
@@ -273,7 +273,7 @@ function PublicBoard() {
                       <span className="flex flex-col"><b>{r.name}</b><span className="text-[12px] text-mute">{MARKETS[r.market].name}</span></span>
                     </span>
                   </td>
-                  <td className="px-2 py-3.5 text-right font-mono font-semibold">{r.qualifiedQ}{r.qualifiedQ >= 10 && <span className="ml-2 rounded bg-lime px-1.5 py-0.5 font-sans text-[11px] font-bold">L Creator</span>}</td>
+                  <td className="px-2 py-3.5 text-right font-mono font-semibold">{r.qualifiedQ}{r.qualifiedQ >= 10 && <span className="ml-2 rounded bg-brand px-1.5 py-0.5 font-sans text-[11px] font-bold">L Creator</span>}</td>
                   <td className="px-2 py-3.5 text-right font-mono">{r.perf >= 0 ? `${r.perf}% under` : `${-r.perf}% over`}</td>
                   <td className="px-5 py-3.5 text-right font-mono">{r.campaigns.length}</td>
                 </tr>

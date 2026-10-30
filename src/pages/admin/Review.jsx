@@ -59,7 +59,7 @@ export default function Review() {
                       <b className="truncate text-[14px]">{p.title}</b>
                       <span className={cx('truncate text-[12px]', on ? 'text-white/60' : 'text-mute')}>{c.name} · {p.submitted}</span>
                     </span>
-                    {p.creatorId === ME && <span className="ml-auto rounded-full bg-lime px-1.5 text-[10px] font-bold text-ink">NEW</span>}
+                    {p.creatorId === ME && <span className="ml-auto rounded-full bg-brand px-1.5 text-[10px] font-bold text-ink">NEW</span>}
                   </button>
                 );
               })}
@@ -108,7 +108,7 @@ export default function Review() {
             <div className="flex flex-col gap-1 rounded-xl bg-paper p-4">
               <div className="flex items-baseline justify-between gap-3">
                 <span className="eyebrow">Calculated L-Score</span>
-                <span className={cx('text-[13px] font-semibold', current.under ? 'text-lime-deep' : 'text-bad')}>{current.under ? 'Under the line: approval issues an L Mark' : 'Over the line: approval records not qualified'}</span>
+                <span className={cx('text-[13px] font-semibold', current.under ? 'text-brand-deep' : 'text-over')}>{current.under ? 'Under the line: approval issues an L Mark' : 'Over the line: approval records not qualified'}</span>
               </div>
               <span className="display text-[44px] font-black leading-none tnum">{fmt(current.score)}</span>
               <ScoreBar score={current.score} line={current.line} />

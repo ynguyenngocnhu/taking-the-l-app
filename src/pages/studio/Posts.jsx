@@ -60,7 +60,7 @@ export function PostDetail({ id }) {
         <Card className={cx('flex flex-col gap-6 overflow-hidden p-6 sm:p-8', p.status === 'qualified' && 'border-ink')}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
-              <span className={cx('inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider', p.status === 'qualified' ? 'bg-lime text-ink' : p.status === 'draft' ? 'border border-dashed border-ink/40 text-ink' : 'bg-paper text-ink')}>
+              <span className={cx('inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider', p.status === 'qualified' ? 'bg-brand text-ink' : p.status === 'draft' ? 'border border-dashed border-ink/40 text-ink' : 'bg-paper text-ink')}>
                 {p.status === 'qualified' && <LGlyph size={13} />}{h.tag}
               </span>
               <span className="mt-3 flex items-baseline gap-2">
@@ -79,7 +79,7 @@ export function PostDetail({ id }) {
           <p className="text-[15px]">{h.line}</p>
           <div className="flex flex-wrap gap-2">
             {canReceipt && <Button as="a" href={href(`studio-receipt-${p.id}`)}><ReceiptIcon size={17} /> View Impact Receipt</Button>}
-            {p.status === 'qualified' && <Button variant="lime" onClick={() => setShare(true)}><Share2 size={17} /> Share your L Mark</Button>}
+            {p.status === 'qualified' && <Button variant="brand" onClick={() => setShare(true)}><Share2 size={17} /> Share your L Mark</Button>}
             {p.status === 'draft' && <Button onClick={() => go('studio-submit')}>Submit once published <ArrowRight size={16} /></Button>}
           </div>
           {p.status === 'review' && (
@@ -105,7 +105,7 @@ export function PostDetail({ id }) {
             <Card className="flex flex-col gap-3 p-5">
               <span className="eyebrow">{p.under ? 'Make it even lighter' : 'Ways to get under the line'}</span>
               {opts.map((o) => (
-                <div key={o.t} className="flex gap-3"><LGlyph size={18} className="mt-0.5 shrink-0 text-lime-deep" /><div className="text-[14px]"><b>{o.t}.</b> <span className="text-mute">{o.d}</span></div></div>
+                <div key={o.t} className="flex gap-3"><LGlyph size={18} className="mt-0.5 shrink-0 text-brand-deep" /><div className="text-[14px]"><b>{o.t}.</b> <span className="text-mute">{o.d}</span></div></div>
               ))}
             </Card>
           )}
@@ -265,8 +265,8 @@ export function Receipt({ id }) {
     <div className="flex flex-col gap-6">
       <a href={href(`studio-post-${p.id}`)} className="inline-flex items-center gap-1.5 self-start text-[14px] font-semibold text-mute hover:text-ink"><ArrowLeft size={16} /> Back to result</a>
       <div className="grid items-start gap-8 lg:grid-cols-[420px_1fr]">
-        <article aria-label="Impact Receipt" className="relative mx-auto w-full max-w-[420px] overflow-hidden rounded-2xl bg-white shadow-[0_1px_0_#E3E4DD,0_20px_40px_-24px_rgba(18,20,17,.35)]">
-          <div className="flex items-center justify-between bg-ink px-6 py-4 text-white">
+        <article aria-label="Impact Receipt" className="relative mx-auto w-full max-w-[420px] overflow-hidden rounded-2xl border border-[#BDBDBD]/60 bg-ink text-paper shadow-[0_20px_40px_-24px_rgba(13,13,13,.5)]">
+          <div className="flex items-center justify-between border-b border-dashed border-[#BDBDBD]/50 px-6 py-4 text-white">
             <span className="flex items-center gap-2"><LBox size={26} /><b className="display text-[16px]">L Platform</b></span>
             <span className="font-mono text-[11px] uppercase tracking-widest text-white/60">Impact Receipt</span>
           </div>
@@ -274,39 +274,39 @@ export function Receipt({ id }) {
             <div className="flex items-center gap-4">
               <Thumb index={p.thumb} secs={p.secs} className="h-[92px] w-[64px]" label={p.title} />
               <div className="flex min-w-0 flex-col gap-1">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-mute">{me.name} · {me.handle}</span>
+                <span className="font-mono text-[11px] uppercase tracking-wider text-white/55">{me.name} · {me.handle}</span>
                 <b className="text-[17px] leading-snug">{p.title}</b>
               </div>
             </div>
-            <div className="flex items-end justify-between rounded-xl bg-paper p-4">
+            <div className="flex items-end justify-between rounded-xl bg-white/[0.06] p-4">
               <div className="flex flex-col">
-                <span className="eyebrow">L-Score</span>
-                <span className="display text-[56px] font-black leading-[0.9] tnum">{fmt(p.score)}</span>
-                <span className="font-mono text-[11px] text-mute">g CO₂e / 1,000 views</span>
+                <span className="eyebrow text-white/55">L-Score</span>
+                <span className="display text-[56px] font-black leading-[0.9] text-brand-text tnum">{fmt(p.score)}</span>
+                <span className="font-mono text-[11px] text-white/55">g CO₂e / 1,000 views</span>
               </div>
-              <div className={cx('flex flex-col items-center gap-1 rounded-xl px-3 py-2', verified ? 'bg-lime' : 'border border-dashed border-ink/40')}>
+              <div className={cx('flex flex-col items-center gap-1 rounded-xl px-3 py-2', verified ? 'bg-brand text-ink' : 'border border-dashed border-white/40')}>
                 <LGlyph size={30} />
                 <span className="text-[11px] font-bold uppercase tracking-wider">{verified ? 'L-Earned' : 'Pending'}</span>
               </div>
             </div>
-            <ScoreBar score={p.score} line={p.line} compact />
+            <ScoreBar score={p.score} line={p.line} compact dark />
             <dl className="flex flex-col font-mono text-[13px]">
               {rows.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-dashed border-line-strong py-2 last:border-0">
-                  <dt className="text-mute">{k}</dt><dd className="text-right font-semibold">{v}</dd>
+                <div key={k} className="flex justify-between gap-4 border-b border-dashed border-[#BDBDBD]/40 py-2 last:border-0">
+                  <dt className="text-white/55">{k}</dt><dd className="text-right font-semibold">{v}</dd>
                 </div>
               ))}
             </dl>
-            <p className="font-mono text-[10px] leading-relaxed text-mute">Receipt {p.id.toUpperCase()} · L Standard {state.method.version}. Illustrative demo figures, not a validated carbon result.</p>
+            <p className="font-mono text-[10px] leading-relaxed text-white/45">Receipt {p.id.toUpperCase()} · L Standard {state.method.version}. Illustrative demo figures, not a validated carbon result.</p>
           </div>
-          {!verified && <div className="pointer-events-none absolute right-5 top-20 rotate-12 rounded-md border-2 border-warn px-2 py-0.5 font-mono text-[12px] font-bold uppercase text-warn">Not yet verified</div>}
+          {!verified && <div className="pointer-events-none absolute right-5 top-20 rotate-12 rounded-md border-2 border-[#F2B84B] px-2 py-0.5 font-mono text-[12px] font-bold uppercase text-[#F2B84B]">Not yet verified</div>}
         </article>
         <div className="flex flex-col gap-4">
           <h1 className="display text-[28px] font-extrabold leading-tight">Your Impact Receipt</h1>
           <p className="max-w-md text-[15px] text-mute">Proof that this post landed under the L line. Post it to your story, pin it to the comments, or attach it to a campaign report.</p>
           <div className="flex flex-wrap gap-2">
             <Button onClick={download} disabled={busy}>{busy ? <Spinner size={16} /> : <Download size={17} />} {busy ? 'Preparing…' : 'Download receipt'}</Button>
-            <Button variant="lime" onClick={() => setShare(true)} disabled={!verified}><Share2 size={17} /> Share your L Mark</Button>
+            <Button variant="brand" onClick={() => setShare(true)} disabled={!verified}><Share2 size={17} /> Share your L Mark</Button>
           </div>
           {!verified && <p className="text-[13px] text-warn">Sharing unlocks once the post is verified.</p>}
           <DemoNote>Download and share are simulated in this prototype.</DemoNote>

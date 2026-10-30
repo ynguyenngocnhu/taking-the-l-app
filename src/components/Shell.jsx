@@ -13,20 +13,20 @@ const ROLES = [
 export function TopBar({ area }) {
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[env(safe-area-inset-top,0px)] bg-paper/95" />
-      <header className="gutter sticky top-[env(safe-area-inset-top,0px)] z-30 border-b border-line bg-paper/90 backdrop-blur">
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[env(safe-area-inset-top,0px)] bg-ink" />
+      <header className="gutter sticky top-[env(safe-area-inset-top,0px)] z-30 border-b border-white/10 bg-ink text-paper">
         <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between gap-3">
           <a href={href('standard')} className="flex items-center gap-2.5" aria-label="L Platform home">
             <LBox size={30} />
             <span className="display hidden text-[17px] font-extrabold tracking-tight sm:inline">L Platform</span>
           </a>
           <nav aria-label="Switch experience" className="flex items-center gap-2">
-            <span className="eyebrow hidden md:inline">Demo as</span>
-            <div className="flex gap-1 rounded-full border border-line bg-white p-1">
+            <span className="eyebrow hidden text-white/50 md:inline">Demo as</span>
+            <div className="flex gap-1 rounded-full border border-white/15 bg-white/5 p-1">
               {ROLES.map((r) => {
                 const on = r.area === area;
                 return (
-                  <a key={r.area} href={href(r.to)} aria-current={on ? 'page' : undefined} className={cx('flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors', on ? 'bg-ink text-white' : 'text-mute hover:text-ink')}>
+                  <a key={r.area} href={href(r.to)} aria-current={on ? 'page' : undefined} className={cx('flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors', on ? 'bg-brand text-white' : 'text-white/65 hover:text-white')}>
                     <r.Icon size={15} aria-hidden="true" className="hidden min-[400px]:block" />
                     <span className="lg:hidden">{r.short}</span>
                     <span className="hidden lg:inline">{r.label}</span>
@@ -55,9 +55,9 @@ export function SideLayout({ title, user, items, current, children, footer }) {
             const on = it.key === current;
             return (
               <a key={it.key} href={href(it.to)} aria-current={on ? 'page' : undefined} className={cx('flex h-11 items-center gap-3 rounded-xl px-3 text-[14px] font-medium transition-colors', on ? 'bg-ink text-white' : 'text-ink-2 hover:bg-ink/5')}>
-                <it.Icon size={18} aria-hidden="true" className={on ? 'text-lime' : 'text-mute'} />
+                <it.Icon size={18} aria-hidden="true" className={on ? 'text-brand' : 'text-mute'} />
                 <span className="flex-1">{it.label}</span>
-                {it.badge ? <span className={cx('rounded-full px-2 py-0.5 text-[11px] font-bold tnum', on ? 'bg-lime text-ink' : 'bg-ink text-white')}>{it.badge}</span> : null}
+                {it.badge ? <span className={cx('rounded-full px-2 py-0.5 text-[11px] font-bold tnum', on ? 'bg-brand text-ink' : 'bg-ink text-white')}>{it.badge}</span> : null}
               </a>
             );
           })}
@@ -70,7 +70,7 @@ export function SideLayout({ title, user, items, current, children, footer }) {
               <a key={it.key} href={href(it.to)} aria-current={on ? 'page' : undefined} className={cx('flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold', on ? 'bg-ink text-white' : 'border border-line bg-white text-ink-2')}>
                 <it.Icon size={15} aria-hidden="true" />
                 {it.label}
-                {it.badge ? <span className="rounded-full bg-lime px-1.5 text-[11px] text-ink tnum">{it.badge}</span> : null}
+                {it.badge ? <span className="rounded-full bg-brand px-1.5 text-[11px] text-ink tnum">{it.badge}</span> : null}
               </a>
             );
           })}

@@ -6,7 +6,7 @@ import { useStore, enrich, inQuarter } from '../../lib/store.jsx';
 import { href } from '../../lib/router.js';
 import { fmt, compact, MARKETS } from '../../lib/score.js';
 
-const C = { blue: '#4F63C9', green: '#6E9E0A', red: '#C8473A', grid: '#E3E4DD', text: '#646860' };
+const C = { blue: '#8F897F', green: '#E52521', red: '#3B3833', review: '#C8C0B2', grid: '#E3DDD2', text: '#5F5A52' };
 
 function weekStart(iso) {
   const d = new Date(iso + 'T00:00:00Z');
@@ -69,7 +69,7 @@ export default function Overview() {
   const split = [
     { name: 'Qualified', value: qualified.length, fill: C.green },
     { name: 'Not qualified', value: scope.filter((p) => p.status === 'not' || p.status === 'rejected').length, fill: C.red },
-    { name: 'Under review', value: scope.filter((p) => p.status === 'review').length, fill: C.blue },
+    { name: 'Under review', value: scope.filter((p) => p.status === 'review').length, fill: C.review },
   ];
 
   const camp = state.campaigns.filter((c) => c.status !== 'Draft').map((c) => ({
@@ -84,7 +84,7 @@ export default function Overview() {
     <div className="flex flex-col gap-8">
       <PageHead eyebrow="Admin Console" title="Programme overview" sub="SAPMENA pilot. All figures are fictional demo data." actions={<Seg label="Time range" value={range} onChange={setRange} options={[{ value: 'all', label: 'Since launch' }, { value: 'q', label: 'This quarter' }]} />} />
       {pending > 0 && (
-        <a href={href('admin-review')} className="flex items-center justify-between gap-3 rounded-2xl bg-lime px-5 py-4 font-semibold">
+        <a href={href('admin-review')} className="flex items-center justify-between gap-3 rounded-2xl bg-brand px-5 py-4 font-semibold">
           <span>{pending} submissions are waiting for verification</span>
           <span className="flex items-center gap-1 text-[14px]">Review now <ArrowRight size={16} /></span>
         </a>
