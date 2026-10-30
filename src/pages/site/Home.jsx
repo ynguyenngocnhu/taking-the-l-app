@@ -35,13 +35,13 @@ function Hero() {
 
 function Intro() {
   const items = [
-    ['What L is', "A public standard from L'Oréal that measures how much a video weighs per view, and recognises posts that come in lighter than their market."],
+    ["What is it", "A public standard from L'Oréal that measures how much a video weighs per view, and recognises posts that come in lighter than their market."],
     ['Why it matters', 'Every second of video is streamed to every viewer. Shorter, right-sized video carries the same story with less energy behind each view.'],
     ['How creators take part', 'Estimate a video before posting, then submit the published post. Posts that qualify after verification carry the L Mark.'],
     ['How brands use it', 'Verified posts show their L-Score, L line and campaign, so brands can find and recognise qualifying content post by post.'],
   ];
   return (
-    <Section eyebrow="Introducing L" title="A second number next to views.">
+    <Section eyebrow="Introducing" title="A second number next to views.">
       <div className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
         {items.map(([t, d]) => (
           <div key={t} className="flex flex-col gap-3 bg-white p-6">
